@@ -1,0 +1,1953 @@
+==============================================================================
+CONNX — Build Pass 3 (Roles, Consent Center, Templates)
+==============================================================================
+
+This bundle contains 9 files for Pass 3.
+Each file is delimited by:
+  >>> FILE: <relative path>
+  ... contents ...
+  <<< END FILE
+
+INSTALLATION:
+  1. You should already have Pass 1 + Pass 2 in your Make project.
+  2. Add the 7 new files at the paths shown.
+  3. REPLACE src/App.tsx with the version below — wires the new routes.
+  4. No config or dependency changes needed.
+
+==============================================================================
+>>> FILE: README.md
+==============================================================================
+# CONNX — Build Pass 3
+
+Three more recruiter surfaces, fully built: **Roles & Candidates**, **Consent Center**, and **Templates Library**. Plus the **role detail** page with the full filterable, bulk-actionable candidate table.
+
+## What's in Pass 3
+
+**8 files total** — 2 new UI primitives, 1 mock data file, 4 pages, 1 router update.
+
+### New files
+```
+src/components/ui/select.tsx                        # Radix Select primitive (Leoforce-styled)
+src/components/ui/popover.tsx                       # Radix Popover primitive
+src/data/library-mock.ts                            # Templates + audit log + stage/consent labels
+src/pages/recruiter/roles.tsx                       # All-roles list view with health, filters, sorting
+src/pages/recruiter/role-detail.tsx                 # Single role + full candidate table with bulk actions
+src/pages/recruiter/consent-center.tsx              # Consent queue + tamper-evident audit trail
+src/pages/recruiter/templates.tsx                   # Templates with live merge-field preview
+```
+
+### Replaced file
+```
+src/App.tsx                                         # Router updated — placeholders → real pages
+```
+
+## How to install on top of Pass 1 + Pass 2
+
+1. **Add the 7 new files** at the paths shown above.
+2. **Replace `src/App.tsx`** with the new version.
+3. No config or dependency changes — Pass 1 already includes all needed Radix packages.
+
+That's it. Click "Roles & candidates" or "Consent center" or "Templates" in the sidebar and you're in.
+
+## What you'll see
+
+### Roles & Candidates (`/roles`)
+- 6 open roles in a 2-column card grid, each with: title, team, location, days open, JD summary, 4-stage funnel strip (Shortlisted → Consented → Screened → Advanced) with conversion percentages, hiring manager avatar, target/actual badge
+- Health badges per role: On track / At risk / Stalled
+- Search by title/team, filter by team, sort by newest / longest open / most advanced / health
+- Click any role → role detail
+
+### Role detail (`/roles/:id`)
+- Header with role meta + `Start dialer for this role` and `Bulk message` CTAs
+- 5-stat strip: Shortlisted / Consented (with %) / Screened (with %) / Advanced / Rejected
+- Stage tabs: All / Shortlisted / Consented / Screened / Advanced / Rejected (with counts)
+- Candidate table with avatar, current role+company, consent badge, stage, source, last activity
+- Search by name/company/skill, filter by consent status and source, export
+- **Bulk action bar** (appears when rows selected): Add to queue, SMS, Email — slides in from below
+- Row hover reveals quick-call button + 3-dot menu (View profile, Add to queue, SMS, Email, Schedule callback, Resend consent if expired, Reject)
+- Responsive: hides progressively less-essential columns on smaller screens
+
+### Consent Center (`/consent`)
+- 5-stat strip: Pending / Accepted / Declined / Expired / Acceptance rate
+- Two tabs: **Consent queue** + **Audit trail**
+- **Queue:** filter by status + role, contextual bulk-action callouts (e.g. "5 pending consents · oldest 2 days ago · Send 48h reminder to all"), per-candidate quick actions revealed on hover (Resend SMS, Resend email, Re-consent for expired, Add to queue for accepted)
+- **Audit trail:** tamper-evident log of every consent action (sent, resent, accepted, declined, expired, callback requested, opt-out, language change, reminder sent), with channel badge (SMS/EMAIL/SYSTEM), timestamp, candidate, role, and detail with IP for accepted ones. Compliance-grade.
+
+### Templates Library (`/templates`)
+- Channel tabs: All / SMS / Email / Voicemail / Screening question sets (with counts)
+- Two-column layout: list of templates left, **live preview** right
+- Filter by stage (consent / follow-up / screening / offer / rejection / general), search by name/body/description
+- Each template: name, description, favourite star, lock icon if admin-managed, stage badge, "used in N roles" badge, last used hint
+- **Live preview:**
+  - **SMS** → renders as a phone message bubble with character count and segment count
+  - **Email** → renders as an email card with from/to/subject/body
+  - **Voicemail** → renders as a quoted script with estimated duration
+  - **Screening** → renders as numbered question cards
+- **Render against** dropdown lets you pick any candidate to see merge fields resolved in real time
+- Unresolved merge fields highlighted in amber (so recruiters spot template bugs before sending)
+- Per-template actions: Favourite, Duplicate, Edit, Delete (Edit/Delete disabled when admin-locked)
+
+## Design moves I made
+
+1. **Bulk actions live in a slide-up bar at the top, not a footer.** Cosmic-indigo dark band so it pops above the candidate table without competing with row hovers. Three-action limit (queue, SMS, email) keeps it scannable.
+
+2. **The audit trail is presented as a story, not a database dump.** Each entry has an icon, an action verb in semantic color, the candidate, the role, and a meaningful detail line ("Accepted via SMS reply 'YES'. IP: 73.142.18.91"). Compliance teams will love it; recruiters can actually skim it.
+
+3. **Templates preview against real candidates, not a blank `{{firstName}}`.** This is the move that makes the Templates page useful instead of bureaucratic. Picking "Aisha Okafor" shows the recruiter exactly what the candidate will receive.
+
+4. **Stage filters and consent filters are on different axes.** Stage = where they are in the pipeline (Shortlisted → Advanced). Consent = where they are with comms (Pending / Accepted / Declined). Recruiters need both because "consented but not screened" and "screened but rejected" are completely different action plans.
+
+5. **Per-role pipeline strip mirrors the dashboard funnels.** Same 4-step structure (Shortlisted → Consented → Screened → Advanced), so recruiters never have to relearn the visual grammar moving between surfaces.
+
+6. **Mobile**: 2-column role grid → 1-column. Candidate table progressively hides Source (xl), Last activity (lg), Current role (lg), Stage (md). Templates layout stacks list above preview.
+
+## What's next (Pass 4)
+
+The hero flow: **Auto Dialer**. Three sub-screens: Queue Builder (pick role, pick candidates, set priority), Customise Call View (the BRD-mandated pre-session pill-based layout config), and the **Active Call** screen — the 50/30/20 layout with the panel pill bar, in-call controls, voicemail drop, disposition flow, and the floating Notes shortcut. This is the screen this product gets built around.
+<<< END FILE
+
+==============================================================================
+>>> FILE: src/components/ui/select.tsx
+==============================================================================
+import * as React from "react";
+import * as SelectPrimitive from "@radix-ui/react-select";
+import { Check, ChevronDown, ChevronUp } from "lucide-react";
+import { cn } from "@/lib/utils";
+
+export const Select = SelectPrimitive.Root;
+export const SelectGroup = SelectPrimitive.Group;
+export const SelectValue = SelectPrimitive.Value;
+
+export const SelectTrigger = React.forwardRef<
+  React.ElementRef<typeof SelectPrimitive.Trigger>,
+  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Trigger>
+>(({ className, children, ...props }, ref) => (
+  <SelectPrimitive.Trigger
+    ref={ref}
+    className={cn(
+      "flex h-9 w-full items-center justify-between rounded-lg border border-border-strong bg-white px-3 py-1 text-[14px] text-dark transition-colors",
+      "hover:border-stellar/40",
+      "focus-visible:outline-none focus-visible:border-stellar focus-visible:shadow-focus",
+      "disabled:cursor-not-allowed disabled:opacity-50",
+      "data-[placeholder]:text-muted",
+      className
+    )}
+    {...props}
+  >
+    {children}
+    <SelectPrimitive.Icon asChild>
+      <ChevronDown className="h-3.5 w-3.5 text-muted-fg shrink-0" />
+    </SelectPrimitive.Icon>
+  </SelectPrimitive.Trigger>
+));
+SelectTrigger.displayName = "SelectTrigger";
+
+export const SelectContent = React.forwardRef<
+  React.ElementRef<typeof SelectPrimitive.Content>,
+  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Content>
+>(({ className, children, position = "popper", ...props }, ref) => (
+  <SelectPrimitive.Portal>
+    <SelectPrimitive.Content
+      ref={ref}
+      position={position}
+      className={cn(
+        "relative z-50 min-w-[8rem] overflow-hidden rounded-lg border border-border bg-white shadow-2",
+        "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
+        position === "popper" && "data-[side=bottom]:translate-y-1",
+        className
+      )}
+      {...props}
+    >
+      <SelectPrimitive.Viewport className={cn("p-1", position === "popper" && "h-[var(--radix-select-trigger-height)] w-full min-w-[var(--radix-select-trigger-width)]")}>
+        {children}
+      </SelectPrimitive.Viewport>
+    </SelectPrimitive.Content>
+  </SelectPrimitive.Portal>
+));
+SelectContent.displayName = "SelectContent";
+
+export const SelectItem = React.forwardRef<
+  React.ElementRef<typeof SelectPrimitive.Item>,
+  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Item>
+>(({ className, children, ...props }, ref) => (
+  <SelectPrimitive.Item
+    ref={ref}
+    className={cn(
+      "relative flex w-full cursor-default select-none items-center rounded-md py-1.5 pl-8 pr-2 text-[14px] text-dark outline-none transition-colors",
+      "focus:bg-mist focus:text-cosmic",
+      "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+      className
+    )}
+    {...props}
+  >
+    <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
+      <SelectPrimitive.ItemIndicator>
+        <Check className="h-3.5 w-3.5 text-stellar" />
+      </SelectPrimitive.ItemIndicator>
+    </span>
+    <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
+  </SelectPrimitive.Item>
+));
+SelectItem.displayName = "SelectItem";
+
+export const SelectSeparator = React.forwardRef<
+  React.ElementRef<typeof SelectPrimitive.Separator>,
+  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Separator>
+>(({ className, ...props }, ref) => (
+  <SelectPrimitive.Separator ref={ref} className={cn("-mx-1 my-1 h-px bg-border", className)} {...props} />
+));
+SelectSeparator.displayName = "SelectSeparator";
+<<< END FILE
+
+==============================================================================
+>>> FILE: src/components/ui/popover.tsx
+==============================================================================
+import * as React from "react";
+import * as PopoverPrimitive from "@radix-ui/react-popover";
+import { cn } from "@/lib/utils";
+
+export const Popover = PopoverPrimitive.Root;
+export const PopoverTrigger = PopoverPrimitive.Trigger;
+export const PopoverAnchor = PopoverPrimitive.Anchor;
+
+export const PopoverContent = React.forwardRef<
+  React.ElementRef<typeof PopoverPrimitive.Content>,
+  React.ComponentPropsWithoutRef<typeof PopoverPrimitive.Content>
+>(({ className, align = "center", sideOffset = 6, ...props }, ref) => (
+  <PopoverPrimitive.Portal>
+    <PopoverPrimitive.Content
+      ref={ref}
+      align={align}
+      sideOffset={sideOffset}
+      className={cn(
+        "z-50 w-72 rounded-lg border border-border bg-white p-4 shadow-2 outline-none",
+        "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
+        className
+      )}
+      {...props}
+    />
+  </PopoverPrimitive.Portal>
+));
+PopoverContent.displayName = "PopoverContent";
+<<< END FILE
+
+==============================================================================
+>>> FILE: src/data/library-mock.ts
+==============================================================================
+import type { Candidate } from "@/types";
+
+// ─── Templates ────────────────────────────────────────────────────
+export type TemplateChannel = "sms" | "email" | "voicemail" | "screening";
+export type TemplateStage = "consent" | "follow-up" | "screening" | "offer" | "rejection" | "general";
+
+export interface Template {
+  id: string;
+  name: string;
+  channel: TemplateChannel;
+  stage: TemplateStage;
+  subject?: string;
+  body: string;
+  description: string;
+  rolesUsed: number;
+  lastUsed?: string;
+  isFavorite?: boolean;
+  isLocked?: boolean; // managed by admin
+}
+
+export const TEMPLATES: Template[] = [
+  // ── SMS ────────────────────────────────────────────────────────
+  {
+    id: "tpl-1",
+    name: "Initial consent request",
+    channel: "sms",
+    stage: "consent",
+    body: "Hi {{firstName}}, this is {{recruiterFirstName}} from {{orgName}}. We're interested in speaking with you about the {{roleTitle}} role. Would you be open to a brief screening call? Reply YES to consent, or visit {{consentLink}} to choose a time. Reply STOP to opt out.",
+    description: "Default consent SMS sent automatically when candidate is shortlisted.",
+    rolesUsed: 6,
+    lastUsed: "12 minutes ago",
+    isFavorite: true,
+    isLocked: true,
+  },
+  {
+    id: "tpl-2",
+    name: "Consent reminder — 48 hours",
+    channel: "sms",
+    stage: "follow-up",
+    body: "Hi {{firstName}}, just a gentle nudge — we'd still love to chat about {{roleTitle}} at {{orgName}}. Tap here to pick a time that works: {{consentLink}}. No pressure either way.",
+    description: "Friendly nudge for candidates who haven't responded to consent in 48 hours.",
+    rolesUsed: 4,
+    lastUsed: "2 hours ago",
+  },
+  {
+    id: "tpl-3",
+    name: "Callback confirmation",
+    channel: "sms",
+    stage: "follow-up",
+    body: "Hi {{firstName}}, confirming our call for {{callbackTime}}. I'll dial {{phone}}. Looking forward — {{recruiterFirstName}}.",
+    description: "Sent automatically when a callback is scheduled.",
+    rolesUsed: 5,
+    lastUsed: "Yesterday",
+  },
+
+  // ── Email ──────────────────────────────────────────────────────
+  {
+    id: "tpl-4",
+    name: "Initial consent — email",
+    channel: "email",
+    stage: "consent",
+    subject: "Quick question about the {{roleTitle}} role at {{orgName}}",
+    body: `Hi {{firstName}},
+
+I came across your profile while searching for candidates for our {{roleTitle}} role on the {{teamName}} team at {{orgName}}, and I'd love to set up a 20-minute screening call.
+
+A few quick details about the role:
+• {{jdSummary}}
+• {{location}}
+
+If you're open to chatting, you can pick a time directly here: {{consentLink}}
+
+If you'd rather not hear from us, no problem at all — just reply with "no thanks" and I'll stop reaching out.
+
+Best,
+{{recruiterFirstName}}
+{{recruiterTitle}}, {{orgName}}`,
+    description: "Default consent email — branded HTML template with merge fields.",
+    rolesUsed: 6,
+    lastUsed: "1 hour ago",
+    isFavorite: true,
+    isLocked: true,
+  },
+  {
+    id: "tpl-5",
+    name: "Post-screening — advance to onsite",
+    channel: "email",
+    stage: "screening",
+    subject: "Great chatting earlier — next steps for {{roleTitle}}",
+    body: `Hi {{firstName}},
+
+Really enjoyed our conversation earlier. The team is excited to move forward — we'd like to invite you to an onsite (or virtual onsite) interview with the hiring panel.
+
+I'll be in touch shortly with scheduling options. In the meantime, if you have any questions, just reply to this email.
+
+Best,
+{{recruiterFirstName}}`,
+    description: "Sent after a successful screening when advancing the candidate.",
+    rolesUsed: 4,
+    lastUsed: "Yesterday",
+  },
+  {
+    id: "tpl-6",
+    name: "Polite rejection — post-screening",
+    channel: "email",
+    stage: "rejection",
+    subject: "Update on the {{roleTitle}} role at {{orgName}}",
+    body: `Hi {{firstName}},
+
+Thank you for taking the time to chat about the {{roleTitle}} role. After careful consideration, we've decided to move forward with other candidates whose experience more closely matches what we're looking for at this moment.
+
+We were impressed with your background, and we'd love to keep your details on file for future roles that may be a better fit.
+
+Wishing you the best in your search.
+
+Sincerely,
+{{recruiterFirstName}}`,
+    description: "Respectful rejection email post-screening. Always sent personally.",
+    rolesUsed: 6,
+    lastUsed: "3 days ago",
+  },
+
+  // ── Voicemail ──────────────────────────────────────────────────
+  {
+    id: "tpl-7",
+    name: "Standard voicemail drop",
+    channel: "voicemail",
+    stage: "follow-up",
+    body: `Hi {{firstName}}, this is {{recruiterFullName}} from {{orgName}}. I was hoping to chat with you about the {{roleTitle}} role we're hiring for. I'll send you a text message with a link to pick a time that works for you. If you'd prefer to reach me directly, you can call back on this number, {{recruiterCallback}}. Thanks, and I look forward to connecting.`,
+    description: "Pre-recorded voicemail dropped automatically on no-answer.",
+    rolesUsed: 6,
+    lastUsed: "1 hour ago",
+    isLocked: true,
+  },
+
+  // ── Screening question sets ────────────────────────────────────
+  {
+    id: "tpl-8",
+    name: "Senior Backend Engineer screen",
+    channel: "screening",
+    stage: "screening",
+    body: `1. Walk me through a distributed system you've designed end-to-end. What were the key trade-offs?
+2. How do you approach observability in a high-throughput service?
+3. Are you comfortable with on-call rotation (1 week in 6)?
+4. Compensation expectations — base salary range?
+5. Earliest start date if we moved forward?`,
+    description: "Standard 5-question screening set for senior backend roles. Covers technical depth, ops, comp, timeline.",
+    rolesUsed: 1,
+    lastUsed: "2 hours ago",
+  },
+  {
+    id: "tpl-9",
+    name: "Staff Designer screen",
+    channel: "screening",
+    stage: "screening",
+    body: `1. Walk me through a project where you owned design end-to-end. What did you change about the original brief?
+2. How do you partner with engineering when requirements are unclear?
+3. What's your stance on design systems — when do you invest, when do you not?
+4. Compensation expectations — base salary range?`,
+    description: "Standard 4-question screen for staff and principal designers.",
+    rolesUsed: 1,
+    lastUsed: "Yesterday",
+  },
+  {
+    id: "tpl-10",
+    name: "Engineering Manager screen",
+    channel: "screening",
+    stage: "screening",
+    body: `1. How do you grow ICs into senior engineers?
+2. How do you balance shipping vs platform investment?
+3. Walk me through a difficult performance conversation you've had.
+4. What's your philosophy on hiring?
+5. Compensation expectations?`,
+    description: "5-question screen for EM and senior EM roles. Heavier on people leadership.",
+    rolesUsed: 1,
+  },
+];
+
+// ─── Audit log ────────────────────────────────────────────────────
+export type AuditAction =
+  | "consent-sent" | "consent-resent" | "consent-accepted" | "consent-declined"
+  | "consent-expired" | "callback-requested" | "opt-out" | "language-changed"
+  | "reminder-sent";
+
+export interface AuditEntry {
+  id: string;
+  candidateId: string;
+  candidateName: string;
+  roleId: string;
+  roleTitle: string;
+  action: AuditAction;
+  at: string;
+  channel: "sms" | "email" | "system";
+  detail?: string;
+}
+
+export const AUDIT_LOG: AuditEntry[] = [
+  {
+    id: "a1", candidateId: "cand-1001", candidateName: "Aisha Okafor",
+    roleId: "role-1", roleTitle: "Senior Backend Engineer",
+    action: "consent-sent", at: "Today, 9:14 AM", channel: "sms",
+    detail: "Initial consent request via SMS · template: \"Initial consent request\"",
+  },
+  {
+    id: "a2", candidateId: "cand-1001", candidateName: "Aisha Okafor",
+    roleId: "role-1", roleTitle: "Senior Backend Engineer",
+    action: "consent-sent", at: "Today, 9:14 AM", channel: "email",
+    detail: "Initial consent request via email",
+  },
+  {
+    id: "a3", candidateId: "cand-1003", candidateName: "Owen Walsh",
+    roleId: "role-1", roleTitle: "Senior Backend Engineer",
+    action: "consent-accepted", at: "Today, 8:42 AM", channel: "sms",
+    detail: "Accepted via SMS reply \"YES\". IP: 73.142.18.91",
+  },
+  {
+    id: "a4", candidateId: "cand-1024", candidateName: "Felix Lindqvist",
+    roleId: "role-2", roleTitle: "Staff Product Designer",
+    action: "consent-declined", at: "Today, 8:01 AM", channel: "sms",
+    detail: "Declined via SMS reply \"STOP\". Auto-suppressed from all future outreach for this role.",
+  },
+  {
+    id: "a5", candidateId: "cand-1018", candidateName: "Tariq Hassan",
+    roleId: "role-1", roleTitle: "Senior Backend Engineer",
+    action: "reminder-sent", at: "Yesterday, 4:30 PM", channel: "sms",
+    detail: "48-hour reminder sent · template: \"Consent reminder — 48 hours\"",
+  },
+  {
+    id: "a6", candidateId: "cand-1027", candidateName: "Sofia Andersen",
+    roleId: "role-3", roleTitle: "Senior Data Scientist",
+    action: "consent-expired", at: "Yesterday, 11:00 AM", channel: "system",
+    detail: "Consent expired after 72 hours without response. Eligible for re-consent.",
+  },
+  {
+    id: "a7", candidateId: "cand-1032", candidateName: "Jonas Petrov",
+    roleId: "role-4", roleTitle: "Enterprise Account Executive",
+    action: "callback-requested", at: "Yesterday, 10:14 AM", channel: "sms",
+    detail: "Requested callback for Thursday 2:00 PM via consent page.",
+  },
+  {
+    id: "a8", candidateId: "cand-1035", candidateName: "Mira Solberg",
+    roleId: "role-1", roleTitle: "Senior Backend Engineer",
+    action: "opt-out", at: "Mon, 3:21 PM", channel: "sms",
+    detail: "Permanent opt-out across all roles. Added to organisation-wide DNC list.",
+  },
+];
+
+// ─── Stage helpers (for filtering) ────────────────────────────────
+export const STAGE_LABELS = {
+  shortlisted: "Shortlisted",
+  consented: "Consented",
+  screened: "Screened",
+  advanced: "Advanced",
+  rejected: "Rejected",
+} as const;
+
+export const CONSENT_LABELS = {
+  pending: "Pending",
+  accepted: "Accepted",
+  declined: "Declined",
+  expired: "Expired",
+  scheduled: "Scheduled",
+} as const;
+<<< END FILE
+
+==============================================================================
+>>> FILE: src/pages/recruiter/roles.tsx
+==============================================================================
+import { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
+import {
+  Plus, Search, Briefcase, MapPin, Calendar, Users, ChevronRight,
+  AlertTriangle, CheckCircle2, Clock, ArrowUpDown, SlidersHorizontal,
+} from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { NameAvatar } from "@/components/ui/avatar";
+import {
+  Select, SelectTrigger, SelectValue, SelectContent, SelectItem,
+} from "@/components/ui/select";
+import { ROLES } from "@/data/mock";
+import { ROLE_PIPELINES } from "@/data/dashboard-mock";
+import { cn } from "@/lib/utils";
+
+const HEALTH = {
+  "on-track": { label: "On track", icon: CheckCircle2, color: "text-success-ink", bg: "bg-success-soft" },
+  "at-risk": { label: "At risk", icon: Clock, color: "text-warning-ink", bg: "bg-warning-soft" },
+  "stalled": { label: "Stalled", icon: AlertTriangle, color: "text-danger-ink", bg: "bg-danger-soft" },
+} as const;
+
+type SortKey = "newest" | "stage" | "stalled" | "open";
+type FilterTeam = "all" | "Platform" | "Product" | "Data" | "Sales";
+
+export default function RolesPage() {
+  const navigate = useNavigate();
+  const [query, setQuery] = useState("");
+  const [team, setTeam] = useState<FilterTeam>("all");
+  const [sort, setSort] = useState<SortKey>("newest");
+
+  const enriched = useMemo(() => {
+    return ROLES.map((r) => {
+      const p = ROLE_PIPELINES.find((pp) => pp.roleId === r.id)!;
+      return { ...r, ...p };
+    });
+  }, []);
+
+  const filtered = useMemo(() => {
+    let out = enriched;
+    if (team !== "all") out = out.filter((r) => r.team === team);
+    if (query) {
+      const q = query.toLowerCase();
+      out = out.filter((r) => r.title.toLowerCase().includes(q) || r.team.toLowerCase().includes(q));
+    }
+    if (sort === "newest") out = [...out].sort((a, b) => +new Date(b.openedAt) - +new Date(a.openedAt));
+    if (sort === "open") out = [...out].sort((a, b) => b.daysOpen - a.daysOpen);
+    if (sort === "stage") out = [...out].sort((a, b) => b.advanced - a.advanced);
+    if (sort === "stalled") out = [...out].sort((a, b) => {
+      const order = { stalled: 0, "at-risk": 1, "on-track": 2 };
+      return order[a.health] - order[b.health];
+    });
+    return out;
+  }, [enriched, team, query, sort]);
+
+  const totals = useMemo(() => ({
+    open: ROLES.length,
+    candidates: ROLES.reduce((acc, r) => acc + r.shortlisted, 0),
+    advanced: ROLES.reduce((acc, r) => acc + r.advanced, 0),
+    stalled: enriched.filter((r) => r.health === "stalled").length,
+  }), [enriched]);
+
+  return (
+    <div className="p-4 lg:p-6 xl:p-8 max-w-[1280px] mx-auto">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-5">
+        <div>
+          <h1 className="mb-1">Roles &amp; candidates</h1>
+          <p className="text-muted-fg t-body-large">
+            {totals.open} open roles · {totals.candidates} candidates in flight · {totals.advanced} advanced
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm">
+            <SlidersHorizontal className="h-3.5 w-3.5" />
+            Filters
+          </Button>
+          <Button size="sm">
+            <Plus className="h-3.5 w-3.5" />
+            New role
+          </Button>
+        </div>
+      </div>
+
+      {/* Toolbar */}
+      <Card className="mb-5">
+        <CardContent className="p-3 flex flex-col md:flex-row md:items-center gap-3">
+          <div className="relative flex-1 min-w-0">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted" />
+            <Input
+              placeholder="Search by title or team…"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              className="pl-9"
+            />
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <Select value={team} onValueChange={(v) => setTeam(v as FilterTeam)}>
+              <SelectTrigger className="w-[150px]">
+                <SelectValue placeholder="Team" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All teams</SelectItem>
+                <SelectItem value="Platform">Platform</SelectItem>
+                <SelectItem value="Product">Product</SelectItem>
+                <SelectItem value="Data">Data</SelectItem>
+                <SelectItem value="Sales">Sales</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={sort} onValueChange={(v) => setSort(v as SortKey)}>
+              <SelectTrigger className="w-[180px]">
+                <ArrowUpDown className="h-3.5 w-3.5 mr-1.5" />
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="newest">Newest first</SelectItem>
+                <SelectItem value="open">Longest open</SelectItem>
+                <SelectItem value="stage">Most advanced</SelectItem>
+                <SelectItem value="stalled">Health: worst first</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Roles list */}
+      {filtered.length === 0 ? (
+        <Card className="border-dashed">
+          <CardContent className="py-12 text-center">
+            <div className="t-title-medium text-cosmic mb-1">No roles match your filters</div>
+            <p className="t-body-medium text-muted-fg mb-4">Try clearing filters or changing the search query.</p>
+            <Button variant="outline" size="sm" onClick={() => { setQuery(""); setTeam("all"); }}>
+              Clear filters
+            </Button>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {filtered.map((r) => (
+            <RoleCard key={r.id} role={r} onClick={() => navigate(`/roles/${r.id}`)} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function RoleCard({ role: r, onClick }: { role: any; onClick: () => void }) {
+  const health = HEALTH[r.health as keyof typeof HEALTH];
+  const HealthIcon = health.icon;
+  const consentRate = r.shortlisted ? Math.round((r.consented / r.shortlisted) * 100) : 0;
+  const screenRate = r.consented ? Math.round((r.screened / r.consented) * 100) : 0;
+
+  return (
+    <Card className="cursor-pointer hover:shadow-2 transition-shadow" onClick={onClick}>
+      <CardContent className="p-5">
+        {/* Top row */}
+        <div className="flex items-start justify-between gap-3 mb-3">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap mb-1">
+              <h5 className="t-title-medium text-cosmic truncate">{r.title}</h5>
+              <Badge size="sm" className={cn("gap-0.5 border-0", health.bg, health.color)}>
+                <HealthIcon className="h-2.5 w-2.5" />
+                {health.label}
+              </Badge>
+            </div>
+            <div className="flex items-center gap-3 t-body-small text-muted-fg flex-wrap">
+              <span className="flex items-center gap-1"><Briefcase className="h-3 w-3" />{r.team}</span>
+              <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{r.location}</span>
+              <span className="flex items-center gap-1"><Calendar className="h-3 w-3" />{r.daysOpen}d open</span>
+            </div>
+          </div>
+          <ChevronRight className="h-4 w-4 text-muted shrink-0 mt-1" />
+        </div>
+
+        {/* JD summary */}
+        <p className="t-body-small text-muted-fg mb-4 line-clamp-2">{r.jdSummary}</p>
+
+        {/* Pipeline strip */}
+        <div className="grid grid-cols-4 gap-2 mb-3">
+          <Step label="Shortlisted" value={r.shortlisted} />
+          <Step label="Consented" value={r.consented} caption={`${consentRate}%`} />
+          <Step label="Screened" value={r.screened} caption={`${screenRate}%`} />
+          <Step label="Advanced" value={r.advanced} highlight />
+        </div>
+
+        {/* Bottom row: HM + recruiter */}
+        <div className="flex items-center justify-between pt-3 border-t border-border">
+          <div className="flex items-center gap-2">
+            <span className="t-label-small text-muted-fg">HM:</span>
+            <NameAvatar name={r.hiringManager} size={22} />
+            <span className="t-body-small text-dark">{r.hiringManager}</span>
+          </div>
+          <Badge variant="outline" size="sm">
+            {r.advanced}/{r.targetCount} target
+          </Badge>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function Step({ label, value, caption, highlight }: { label: string; value: number; caption?: string; highlight?: boolean }) {
+  return (
+    <div className={cn(
+      "rounded-md p-2 transition-colors",
+      highlight ? "bg-success-soft" : "bg-mist"
+    )}>
+      <div className={cn(
+        "t-headline-small tabular-nums leading-none",
+        highlight ? "text-success-ink" : "text-cosmic"
+      )}>{value}</div>
+      <div className="flex items-center justify-between mt-1 gap-1">
+        <span className="t-body-small text-muted-fg truncate">{label}</span>
+        {caption && <span className="t-label-small text-muted-fg shrink-0">{caption}</span>}
+      </div>
+    </div>
+  );
+}
+<<< END FILE
+
+==============================================================================
+>>> FILE: src/pages/recruiter/role-detail.tsx
+==============================================================================
+import { useState, useMemo } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import {
+  ArrowLeft, Search, Phone, MessageSquareText, Send, MoreHorizontal,
+  ShieldCheck, ShieldAlert, ShieldX, ShieldQuestion, Calendar, Briefcase,
+  MapPin, Plus, Download, ChevronDown, ChevronUp, PhoneCall, UserPlus,
+  Mail, AlertCircle,
+} from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
+import { NameAvatar } from "@/components/ui/avatar";
+import {
+  Select, SelectTrigger, SelectValue, SelectContent, SelectItem,
+} from "@/components/ui/select";
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem,
+  DropdownMenuSeparator, DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { ROLES, CANDIDATES } from "@/data/mock";
+import { ROLE_PIPELINES } from "@/data/dashboard-mock";
+import { STAGE_LABELS, CONSENT_LABELS } from "@/data/library-mock";
+import { cn, timeAgo } from "@/lib/utils";
+import type { Candidate, ConsentStatus, RoleStage } from "@/types";
+
+export default function RoleDetailPage() {
+  const { roleId } = useParams<{ roleId: string }>();
+  const navigate = useNavigate();
+  const role = ROLES.find((r) => r.id === roleId);
+  const pipeline = ROLE_PIPELINES.find((p) => p.roleId === roleId);
+
+  const roleCandidates = useMemo(
+    () => CANDIDATES.filter((c) => c.roleId === roleId),
+    [roleId]
+  );
+
+  const [activeTab, setActiveTab] = useState<"all" | RoleStage>("all");
+  const [query, setQuery] = useState("");
+  const [consentFilter, setConsentFilter] = useState<ConsentStatus | "all">("all");
+  const [sourceFilter, setSourceFilter] = useState<string>("all");
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+
+  const filtered = useMemo(() => {
+    let out = roleCandidates;
+    if (activeTab !== "all") out = out.filter((c) => c.stage === activeTab);
+    if (consentFilter !== "all") out = out.filter((c) => c.consentStatus === consentFilter);
+    if (sourceFilter !== "all") out = out.filter((c) => c.source === sourceFilter);
+    if (query) {
+      const q = query.toLowerCase();
+      out = out.filter((c) =>
+        c.name.toLowerCase().includes(q) ||
+        c.currentCompany.toLowerCase().includes(q) ||
+        c.skills.some((s) => s.toLowerCase().includes(q))
+      );
+    }
+    return out;
+  }, [roleCandidates, activeTab, consentFilter, sourceFilter, query]);
+
+  const stageCounts = useMemo(() => {
+    const c: Record<string, number> = { all: roleCandidates.length };
+    (["shortlisted", "consented", "screened", "advanced", "rejected"] as RoleStage[]).forEach((s) => {
+      c[s] = roleCandidates.filter((cand) => cand.stage === s).length;
+    });
+    return c;
+  }, [roleCandidates]);
+
+  const allSelected = filtered.length > 0 && filtered.every((c) => selected.has(c.id));
+  const someSelected = !allSelected && filtered.some((c) => selected.has(c.id));
+
+  const toggleAll = () => {
+    if (allSelected) setSelected(new Set());
+    else setSelected(new Set(filtered.map((c) => c.id)));
+  };
+  const toggleOne = (id: string) => {
+    const n = new Set(selected);
+    n.has(id) ? n.delete(id) : n.add(id);
+    setSelected(n);
+  };
+
+  if (!role || !pipeline) {
+    return (
+      <div className="p-8">
+        <Button variant="ghost" size="sm" onClick={() => navigate("/roles")}>
+          <ArrowLeft className="h-3.5 w-3.5" /> Back to roles
+        </Button>
+        <p className="mt-6">Role not found.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-4 lg:p-6 xl:p-8 max-w-[1400px] mx-auto">
+      {/* Breadcrumb */}
+      <Button variant="ghost" size="sm" className="mb-3 -ml-2" onClick={() => navigate("/roles")}>
+        <ArrowLeft className="h-3.5 w-3.5" /> All roles
+      </Button>
+
+      {/* Header */}
+      <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4 mb-6">
+        <div className="flex-1 min-w-0">
+          <h1 className="mb-2">{role.title}</h1>
+          <div className="flex items-center gap-4 t-body-medium text-muted-fg flex-wrap">
+            <span className="flex items-center gap-1.5"><Briefcase className="h-3.5 w-3.5" />{role.team}</span>
+            <span className="flex items-center gap-1.5"><MapPin className="h-3.5 w-3.5" />{role.location}</span>
+            <span className="flex items-center gap-1.5"><Calendar className="h-3.5 w-3.5" />{pipeline.daysOpen} days open</span>
+            <span className="flex items-center gap-1.5">
+              <span className="t-label-small text-muted-fg">HM:</span>
+              <NameAvatar name={role.hiringManager} size={20} />
+              <span>{role.hiringManager}</span>
+            </span>
+          </div>
+        </div>
+        <div className="flex items-center gap-2 flex-wrap">
+          <Button variant="outline" size="sm">
+            <Send className="h-3.5 w-3.5" />
+            Bulk message
+          </Button>
+          <Button size="sm" onClick={() => navigate("/dialer")}>
+            <PhoneCall className="h-3.5 w-3.5" />
+            Start dialer for this role
+          </Button>
+        </div>
+      </div>
+
+      {/* Stats strip */}
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-5">
+        <StatCard label="Shortlisted" value={pipeline.shortlisted} />
+        <StatCard label="Consented" value={pipeline.consented} percent={pipeline.shortlisted ? Math.round((pipeline.consented / pipeline.shortlisted) * 100) : 0} />
+        <StatCard label="Screened" value={pipeline.screened} percent={pipeline.consented ? Math.round((pipeline.screened / pipeline.consented) * 100) : 0} />
+        <StatCard label="Advanced" value={pipeline.advanced} highlight />
+        <StatCard label="Rejected" value={role.rejected} />
+      </div>
+
+      {/* Stage tabs */}
+      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)}>
+        <TabsList className="mb-4 flex-wrap h-auto">
+          <TabsTrigger value="all">
+            All <span className="ml-1.5 t-label-small bg-mist text-muted-fg px-1.5 rounded-pill">{stageCounts.all}</span>
+          </TabsTrigger>
+          {(["shortlisted", "consented", "screened", "advanced", "rejected"] as RoleStage[]).map((s) => (
+            <TabsTrigger key={s} value={s}>
+              {STAGE_LABELS[s]} <span className="ml-1.5 t-label-small bg-mist text-muted-fg px-1.5 rounded-pill">{stageCounts[s]}</span>
+            </TabsTrigger>
+          ))}
+        </TabsList>
+
+        <TabsContent value={activeTab} className="mt-0 space-y-3">
+          {/* Toolbar */}
+          <Card>
+            <CardContent className="p-3 flex flex-col md:flex-row md:items-center gap-3">
+              <div className="relative flex-1 min-w-0">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted" />
+                <Input
+                  placeholder="Search by name, company, or skill…"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  className="pl-9"
+                />
+              </div>
+              <div className="flex items-center gap-2 shrink-0 flex-wrap">
+                <Select value={consentFilter} onValueChange={(v) => setConsentFilter(v as any)}>
+                  <SelectTrigger className="w-[160px]"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All consent</SelectItem>
+                    <SelectItem value="pending">Pending</SelectItem>
+                    <SelectItem value="accepted">Accepted</SelectItem>
+                    <SelectItem value="declined">Declined</SelectItem>
+                    <SelectItem value="expired">Expired</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select value={sourceFilter} onValueChange={setSourceFilter}>
+                  <SelectTrigger className="w-[140px]"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All sources</SelectItem>
+                    <SelectItem value="Workday">Workday</SelectItem>
+                    <SelectItem value="Greenhouse">Greenhouse</SelectItem>
+                    <SelectItem value="Lever">Lever</SelectItem>
+                    <SelectItem value="iCIMS">iCIMS</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Button variant="outline" size="sm">
+                  <Download className="h-3.5 w-3.5" /> Export
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Bulk action bar */}
+          {selected.size > 0 && (
+            <div className="bg-cosmic text-white rounded-lg px-4 py-3 flex items-center justify-between gap-3 animate-slide-up">
+              <span className="t-label-large">{selected.size} candidate{selected.size === 1 ? "" : "s"} selected</span>
+              <div className="flex items-center gap-2">
+                <Button size="sm" className="bg-white/15 hover:bg-white/25 text-white">
+                  <PhoneCall className="h-3.5 w-3.5" /> Add to queue
+                </Button>
+                <Button size="sm" className="bg-white/15 hover:bg-white/25 text-white">
+                  <MessageSquareText className="h-3.5 w-3.5" /> SMS
+                </Button>
+                <Button size="sm" className="bg-white/15 hover:bg-white/25 text-white">
+                  <Mail className="h-3.5 w-3.5" /> Email
+                </Button>
+                <Button size="icon-sm" variant="ghost" className="text-white hover:bg-white/15" onClick={() => setSelected(new Set())}>
+                  ✕
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* Candidate table */}
+          {filtered.length === 0 ? (
+            <Card className="border-dashed">
+              <CardContent className="py-12 text-center">
+                <div className="t-title-medium text-cosmic mb-1">No candidates match</div>
+                <p className="t-body-medium text-muted-fg mb-4">Adjust filters or add candidates from your ATS.</p>
+                <Button variant="outline" size="sm">
+                  <UserPlus className="h-3.5 w-3.5" /> Add candidate
+                </Button>
+              </CardContent>
+            </Card>
+          ) : (
+            <Card>
+              <CardContent className="p-0">
+                <CandidateTable
+                  candidates={filtered}
+                  selected={selected}
+                  onToggle={toggleOne}
+                  onToggleAll={toggleAll}
+                  allSelected={allSelected}
+                  someSelected={someSelected}
+                  onCandidateClick={(id) => navigate(`/candidates/${id}`)}
+                />
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+}
+
+function StatCard({
+  label, value, percent, highlight,
+}: { label: string; value: number; percent?: number; highlight?: boolean }) {
+  return (
+    <Card>
+      <CardContent className={cn("p-4", highlight && "bg-success-soft border-success")}>
+        <div className={cn("t-headline-medium tabular-nums leading-none", highlight ? "text-success-ink" : "text-cosmic")}>
+          {value}
+        </div>
+        <div className="flex items-center justify-between mt-2">
+          <span className="t-body-small text-muted-fg">{label}</span>
+          {percent !== undefined && <span className="t-label-small text-muted-fg tabular-nums">{percent}%</span>}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function CandidateTable({
+  candidates, selected, onToggle, onToggleAll, allSelected, someSelected, onCandidateClick,
+}: {
+  candidates: Candidate[];
+  selected: Set<string>;
+  onToggle: (id: string) => void;
+  onToggleAll: () => void;
+  allSelected: boolean;
+  someSelected: boolean;
+  onCandidateClick: (id: string) => void;
+}) {
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full">
+        <thead>
+          <tr className="border-b border-border bg-mist/50">
+            <th className="w-10 px-4 py-3">
+              <Checkbox
+                checked={allSelected ? true : someSelected ? "indeterminate" : false}
+                onCheckedChange={onToggleAll}
+                aria-label="Select all candidates"
+              />
+            </th>
+            <th className="px-2 py-3 text-left t-label-small text-muted-fg">Candidate</th>
+            <th className="px-2 py-3 text-left t-label-small text-muted-fg hidden lg:table-cell">Current</th>
+            <th className="px-2 py-3 text-left t-label-small text-muted-fg">Consent</th>
+            <th className="px-2 py-3 text-left t-label-small text-muted-fg hidden md:table-cell">Stage</th>
+            <th className="px-2 py-3 text-left t-label-small text-muted-fg hidden xl:table-cell">Source</th>
+            <th className="px-2 py-3 text-left t-label-small text-muted-fg hidden lg:table-cell">Last activity</th>
+            <th className="w-10 px-4 py-3" />
+          </tr>
+        </thead>
+        <tbody>
+          {candidates.map((c) => (
+            <CandidateRow
+              key={c.id}
+              candidate={c}
+              isSelected={selected.has(c.id)}
+              onToggle={() => onToggle(c.id)}
+              onClick={() => onCandidateClick(c.id)}
+            />
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+const CONSENT_VARIANT: Record<ConsentStatus, { variant: "success" | "warning" | "danger" | "neutral" | "info"; icon: React.ComponentType<{ className?: string }> }> = {
+  accepted: { variant: "success", icon: ShieldCheck },
+  pending: { variant: "warning", icon: ShieldQuestion },
+  declined: { variant: "danger", icon: ShieldX },
+  expired: { variant: "neutral", icon: ShieldAlert },
+  scheduled: { variant: "info", icon: Calendar },
+};
+
+function CandidateRow({
+  candidate: c, isSelected, onToggle, onClick,
+}: {
+  candidate: Candidate;
+  isSelected: boolean;
+  onToggle: () => void;
+  onClick: () => void;
+}) {
+  const consentCfg = CONSENT_VARIANT[c.consentStatus];
+  const ConsentIcon = consentCfg.icon;
+
+  return (
+    <tr
+      className={cn(
+        "border-b border-border last:border-0 hover:bg-mist/50 transition-colors group",
+        isSelected && "bg-stellar-50/40"
+      )}
+    >
+      <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
+        <Checkbox checked={isSelected} onCheckedChange={onToggle} aria-label={`Select ${c.name}`} />
+      </td>
+      <td className="px-2 py-3 cursor-pointer" onClick={onClick}>
+        <div className="flex items-center gap-2.5">
+          <NameAvatar name={c.name} size={32} />
+          <div className="min-w-0">
+            <div className="t-label-large text-dark truncate">{c.name}</div>
+            <div className="t-body-small text-muted-fg truncate">{c.location}</div>
+          </div>
+        </div>
+      </td>
+      <td className="px-2 py-3 hidden lg:table-cell cursor-pointer" onClick={onClick}>
+        <div className="t-body-medium text-dark truncate max-w-[200px]">{c.currentRole}</div>
+        <div className="t-body-small text-muted-fg truncate max-w-[200px]">{c.currentCompany}</div>
+      </td>
+      <td className="px-2 py-3 cursor-pointer" onClick={onClick}>
+        <Badge variant={consentCfg.variant} size="sm" className="gap-1">
+          <ConsentIcon className="h-2.5 w-2.5" />
+          {CONSENT_LABELS[c.consentStatus]}
+        </Badge>
+      </td>
+      <td className="px-2 py-3 hidden md:table-cell cursor-pointer" onClick={onClick}>
+        <span className="t-body-medium text-dark">{STAGE_LABELS[c.stage]}</span>
+      </td>
+      <td className="px-2 py-3 hidden xl:table-cell cursor-pointer" onClick={onClick}>
+        <span className="t-body-small text-muted-fg">{c.source}</span>
+      </td>
+      <td className="px-2 py-3 hidden lg:table-cell cursor-pointer" onClick={onClick}>
+        <span className="t-body-small text-muted-fg">
+          {c.lastCallAt ? timeAgo(c.lastCallAt) : c.consentRespondedAt ? timeAgo(c.consentRespondedAt) : timeAgo(c.shortlistedAt)}
+        </span>
+      </td>
+      <td className="px-4 py-3 text-right" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center gap-1 justify-end">
+          {c.consentStatus === "accepted" && (
+            <Button size="icon-sm" variant="ghost" className="opacity-0 group-hover:opacity-100 transition-opacity">
+              <Phone className="h-3.5 w-3.5 text-stellar" />
+            </Button>
+          )}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button size="icon-sm" variant="ghost" aria-label="More actions">
+                <MoreHorizontal className="h-3.5 w-3.5" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onSelect={onClick}>View profile</DropdownMenuItem>
+              <DropdownMenuItem>Add to queue</DropdownMenuItem>
+              <DropdownMenuItem>Send SMS</DropdownMenuItem>
+              <DropdownMenuItem>Send email</DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem>Schedule callback</DropdownMenuItem>
+              {c.consentStatus === "expired" && <DropdownMenuItem>Resend consent</DropdownMenuItem>}
+              <DropdownMenuSeparator />
+              <DropdownMenuItem className="text-danger-ink">Reject</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      </td>
+    </tr>
+  );
+}
+<<< END FILE
+
+==============================================================================
+>>> FILE: src/pages/recruiter/consent-center.tsx
+==============================================================================
+import { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
+import {
+  ShieldCheck, ShieldX, ShieldAlert, ShieldQuestion, Calendar, Search,
+  Send, RefreshCcw, Globe, Clock, Filter, Download, ChevronRight,
+  History, MessageSquareText, Mail, Settings,
+} from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { NameAvatar } from "@/components/ui/avatar";
+import {
+  Select, SelectTrigger, SelectValue, SelectContent, SelectItem,
+} from "@/components/ui/select";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { CANDIDATES, ROLES } from "@/data/mock";
+import { AUDIT_LOG, CONSENT_LABELS } from "@/data/library-mock";
+import { cn, timeAgo } from "@/lib/utils";
+import type { ConsentStatus } from "@/types";
+
+const STATUS_CFG: Record<ConsentStatus, {
+  icon: React.ComponentType<{ className?: string }>;
+  variant: "success" | "warning" | "danger" | "neutral" | "info";
+  bg: string;
+  iconColor: string;
+}> = {
+  accepted: { icon: ShieldCheck, variant: "success", bg: "bg-success-soft", iconColor: "text-success-ink" },
+  pending: { icon: ShieldQuestion, variant: "warning", bg: "bg-warning-soft", iconColor: "text-warning-ink" },
+  declined: { icon: ShieldX, variant: "danger", bg: "bg-danger-soft", iconColor: "text-danger-ink" },
+  expired: { icon: ShieldAlert, variant: "neutral", bg: "bg-mist", iconColor: "text-muted-fg" },
+  scheduled: { icon: Calendar, variant: "info", bg: "bg-stellar-50", iconColor: "text-stellar-700" },
+};
+
+export default function ConsentCenterPage() {
+  const navigate = useNavigate();
+  const [tab, setTab] = useState<"queue" | "audit">("queue");
+  const [statusFilter, setStatusFilter] = useState<ConsentStatus | "all">("all");
+  const [roleFilter, setRoleFilter] = useState<string>("all");
+  const [query, setQuery] = useState("");
+
+  // Stats across all candidates
+  const stats = useMemo(() => {
+    const total = CANDIDATES.length;
+    const counts = {
+      pending: CANDIDATES.filter((c) => c.consentStatus === "pending").length,
+      accepted: CANDIDATES.filter((c) => c.consentStatus === "accepted").length,
+      declined: CANDIDATES.filter((c) => c.consentStatus === "declined").length,
+      expired: CANDIDATES.filter((c) => c.consentStatus === "expired").length,
+    };
+    const acceptanceRate = total ? Math.round((counts.accepted / (counts.accepted + counts.declined + counts.expired || 1)) * 100) : 0;
+    return { total, ...counts, acceptanceRate };
+  }, []);
+
+  const filtered = useMemo(() => {
+    let out = CANDIDATES;
+    if (statusFilter !== "all") out = out.filter((c) => c.consentStatus === statusFilter);
+    if (roleFilter !== "all") out = out.filter((c) => c.roleId === roleFilter);
+    if (query) {
+      const q = query.toLowerCase();
+      out = out.filter((c) => c.name.toLowerCase().includes(q) || c.email.toLowerCase().includes(q));
+    }
+    return out.slice(0, 40);
+  }, [statusFilter, roleFilter, query]);
+
+  return (
+    <div className="p-4 lg:p-6 xl:p-8 max-w-[1280px] mx-auto">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-5">
+        <div>
+          <h1 className="mb-1">Consent center</h1>
+          <p className="text-muted-fg t-body-large">
+            Track consent status, resend reminders, and audit every interaction. Compliant with GDPR, DPDP Act 2023, PDPA, and TCPA.
+          </p>
+        </div>
+        <div className="flex items-center gap-2 flex-wrap">
+          <Button variant="outline" size="sm">
+            <Settings className="h-3.5 w-3.5" />
+            Reminder rules
+          </Button>
+          <Button variant="outline" size="sm">
+            <Globe className="h-3.5 w-3.5" />
+            Languages
+          </Button>
+        </div>
+      </div>
+
+      {/* Stats strip */}
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-5">
+        <ConsentStat label="Pending" value={stats.pending} cfg={STATUS_CFG.pending} hint="Awaiting reply" />
+        <ConsentStat label="Accepted" value={stats.accepted} cfg={STATUS_CFG.accepted} hint="Ready to call" />
+        <ConsentStat label="Declined" value={stats.declined} cfg={STATUS_CFG.declined} hint="Auto-suppressed" />
+        <ConsentStat label="Expired" value={stats.expired} cfg={STATUS_CFG.expired} hint="Eligible for re-consent" />
+        <Card>
+          <CardContent className="p-4">
+            <div className="t-headline-medium text-cosmic tabular-nums leading-none">{stats.acceptanceRate}%</div>
+            <div className="flex items-center justify-between mt-2">
+              <span className="t-body-small text-muted-fg">Acceptance rate</span>
+              <Badge variant="info" size="sm">+4 vs avg</Badge>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Tabs value={tab} onValueChange={(v) => setTab(v as any)}>
+        <TabsList className="mb-4">
+          <TabsTrigger value="queue">Consent queue</TabsTrigger>
+          <TabsTrigger value="audit">
+            Audit trail
+            <span className="ml-1.5 t-label-small bg-mist text-muted-fg px-1.5 rounded-pill">{AUDIT_LOG.length}</span>
+          </TabsTrigger>
+        </TabsList>
+
+        {/* ─── Queue tab ─────────────────────────────────────────── */}
+        <TabsContent value="queue" className="mt-0 space-y-3">
+          <Card>
+            <CardContent className="p-3 flex flex-col md:flex-row md:items-center gap-3">
+              <div className="relative flex-1 min-w-0">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted" />
+                <Input
+                  placeholder="Search by candidate name or email…"
+                  value={query} onChange={(e) => setQuery(e.target.value)}
+                  className="pl-9"
+                />
+              </div>
+              <div className="flex items-center gap-2 shrink-0 flex-wrap">
+                <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as any)}>
+                  <SelectTrigger className="w-[160px]"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All statuses</SelectItem>
+                    <SelectItem value="pending">Pending</SelectItem>
+                    <SelectItem value="accepted">Accepted</SelectItem>
+                    <SelectItem value="declined">Declined</SelectItem>
+                    <SelectItem value="expired">Expired</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select value={roleFilter} onValueChange={setRoleFilter}>
+                  <SelectTrigger className="w-[200px]"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All roles</SelectItem>
+                    {ROLES.map((r) => (
+                      <SelectItem key={r.id} value={r.id}>{r.title}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Button variant="outline" size="sm">
+                  <Download className="h-3.5 w-3.5" /> Export
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Bulk action bar (when status filter implies a useful bulk action) */}
+          {statusFilter === "pending" && filtered.length > 0 && (
+            <div className="bg-warning-soft border border-warning/20 rounded-lg px-4 py-3 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Clock className="h-4 w-4 text-warning-ink" />
+                <span className="t-label-large text-warning-ink">
+                  {filtered.length} pending consents · oldest {filtered[0] ? timeAgo(filtered[0].consentSentAt || filtered[0].shortlistedAt) : ""}
+                </span>
+              </div>
+              <Button size="sm" variant="outline" className="bg-white">
+                <Send className="h-3.5 w-3.5" />
+                Send 48h reminder to all
+              </Button>
+            </div>
+          )}
+
+          {statusFilter === "expired" && filtered.length > 0 && (
+            <div className="bg-mist border border-border rounded-lg px-4 py-3 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <ShieldAlert className="h-4 w-4 text-muted-fg" />
+                <span className="t-label-large text-cosmic">
+                  {filtered.length} expired consents · eligible for re-consent
+                </span>
+              </div>
+              <Button size="sm">
+                <RefreshCcw className="h-3.5 w-3.5" />
+                Bulk re-consent
+              </Button>
+            </div>
+          )}
+
+          {/* Consent list */}
+          {filtered.length === 0 ? (
+            <Card className="border-dashed">
+              <CardContent className="py-12 text-center">
+                <div className="t-title-medium text-cosmic mb-1">No matching consents</div>
+                <p className="t-body-medium text-muted-fg">Try clearing filters.</p>
+              </CardContent>
+            </Card>
+          ) : (
+            <Card>
+              <CardContent className="p-0">
+                {filtered.map((c, i) => {
+                  const cfg = STATUS_CFG[c.consentStatus];
+                  const Icon = cfg.icon;
+                  const role = ROLES.find((r) => r.id === c.roleId);
+
+                  return (
+                    <div
+                      key={c.id}
+                      className={cn(
+                        "flex items-center gap-3 px-4 py-3 hover:bg-mist/50 transition-colors group",
+                        i !== filtered.length - 1 && "border-b border-border"
+                      )}
+                    >
+                      <div className={cn("h-9 w-9 rounded-md flex items-center justify-center shrink-0", cfg.bg)}>
+                        <Icon className={cn("h-4 w-4", cfg.iconColor)} />
+                      </div>
+
+                      <NameAvatar name={c.name} size={36} />
+
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span
+                            className="t-label-large text-dark truncate cursor-pointer hover:text-stellar"
+                            onClick={() => navigate(`/candidates/${c.id}`)}
+                          >
+                            {c.name}
+                          </span>
+                          <Badge variant={cfg.variant} size="sm">{CONSENT_LABELS[c.consentStatus]}</Badge>
+                        </div>
+                        <div className="t-body-small text-muted-fg truncate">
+                          {role?.title} · Sent {c.consentSentAt ? timeAgo(c.consentSentAt) : "—"}
+                          {c.consentRespondedAt && ` · Responded ${timeAgo(c.consentRespondedAt)}`}
+                        </div>
+                      </div>
+
+                      <div className="hidden md:flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                        {c.consentStatus === "pending" && (
+                          <>
+                            <Button size="sm" variant="ghost"><MessageSquareText className="h-3.5 w-3.5" /> Resend SMS</Button>
+                            <Button size="sm" variant="ghost"><Mail className="h-3.5 w-3.5" /> Resend email</Button>
+                          </>
+                        )}
+                        {c.consentStatus === "expired" && (
+                          <Button size="sm" variant="outline"><RefreshCcw className="h-3.5 w-3.5" /> Re-consent</Button>
+                        )}
+                        {c.consentStatus === "accepted" && (
+                          <Button size="sm" variant="ghost" onClick={() => navigate("/dialer")}>Add to queue</Button>
+                        )}
+                        <Button size="icon-sm" variant="ghost" onClick={() => navigate(`/candidates/${c.id}`)}>
+                          <ChevronRight className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
+
+        {/* ─── Audit trail tab ───────────────────────────────────── */}
+        <TabsContent value="audit" className="mt-0">
+          <Card className="mb-3">
+            <CardContent className="p-3 flex items-center gap-3">
+              <History className="h-4 w-4 text-stellar shrink-0" />
+              <div className="flex-1">
+                <div className="t-label-large text-cosmic">Tamper-evident audit log</div>
+                <div className="t-body-small text-muted-fg">
+                  Every consent action is timestamped and stored for 3 years. Required for GDPR, DPDP, and PDPA compliance.
+                </div>
+              </div>
+              <Button variant="outline" size="sm">
+                <Download className="h-3.5 w-3.5" /> Export log
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-0">
+              {AUDIT_LOG.map((entry, i) => (
+                <AuditRow key={entry.id} entry={entry} isLast={i === AUDIT_LOG.length - 1} />
+              ))}
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+}
+
+function ConsentStat({
+  label, value, cfg, hint,
+}: {
+  label: string; value: number;
+  cfg: { icon: React.ComponentType<{ className?: string }>; bg: string; iconColor: string };
+  hint?: string;
+}) {
+  const Icon = cfg.icon;
+  return (
+    <Card>
+      <CardContent className="p-4">
+        <div className="flex items-center justify-between mb-2">
+          <div className={cn("h-7 w-7 rounded-md flex items-center justify-center", cfg.bg)}>
+            <Icon className={cn("h-3.5 w-3.5", cfg.iconColor)} />
+          </div>
+        </div>
+        <div className="t-headline-medium text-cosmic tabular-nums leading-none">{value}</div>
+        <div className="t-body-small text-muted-fg mt-1">{label}</div>
+        {hint && <div className="t-label-small text-muted mt-0.5">{hint}</div>}
+      </CardContent>
+    </Card>
+  );
+}
+
+const ACTION_LABELS: Record<string, { text: string; color: string; icon: React.ComponentType<{ className?: string }> }> = {
+  "consent-sent":      { text: "Consent sent",       color: "text-stellar",     icon: Send },
+  "consent-resent":    { text: "Consent resent",     color: "text-stellar",     icon: RefreshCcw },
+  "consent-accepted":  { text: "Consent accepted",   color: "text-success-ink", icon: ShieldCheck },
+  "consent-declined":  { text: "Consent declined",   color: "text-danger-ink",  icon: ShieldX },
+  "consent-expired":   { text: "Consent expired",    color: "text-muted-fg",    icon: ShieldAlert },
+  "callback-requested":{ text: "Callback requested", color: "text-quantum",     icon: Calendar },
+  "opt-out":           { text: "Opt-out — DNC",      color: "text-danger-ink",  icon: ShieldX },
+  "language-changed":  { text: "Language changed",   color: "text-stellar",     icon: Globe },
+  "reminder-sent":     { text: "Reminder sent",      color: "text-warning-ink", icon: Clock },
+};
+
+function AuditRow({ entry, isLast }: { entry: typeof AUDIT_LOG[number]; isLast: boolean }) {
+  const cfg = ACTION_LABELS[entry.action];
+  const Icon = cfg.icon;
+
+  return (
+    <div className={cn(
+      "flex items-start gap-3 px-4 py-3",
+      !isLast && "border-b border-border"
+    )}>
+      <div className="h-7 w-7 rounded-md bg-mist flex items-center justify-center shrink-0 mt-0.5">
+        <Icon className={cn("h-3.5 w-3.5", cfg.color)} />
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className={cn("t-label-large", cfg.color)}>{cfg.text}</span>
+          <span className="t-body-small text-muted">·</span>
+          <span className="t-label-large text-dark">{entry.candidateName}</span>
+          <span className="t-body-small text-muted">·</span>
+          <span className="t-body-small text-muted-fg truncate">{entry.roleTitle}</span>
+        </div>
+        {entry.detail && (
+          <p className="t-body-small text-muted-fg mt-0.5 break-words">{entry.detail}</p>
+        )}
+      </div>
+      <div className="text-right shrink-0">
+        <div className="t-label-medium text-cosmic">{entry.at}</div>
+        <Badge variant="outline" size="sm" className="mt-0.5">{entry.channel.toUpperCase()}</Badge>
+      </div>
+    </div>
+  );
+}
+<<< END FILE
+
+==============================================================================
+>>> FILE: src/pages/recruiter/templates.tsx
+==============================================================================
+import { useState, useMemo } from "react";
+import {
+  MessageSquareText, Mail, Voicemail, ListChecks, Search, Plus, Star,
+  Lock, Copy, Edit3, Trash2, Tag, Hash, ChevronRight, Eye,
+} from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import {
+  Select, SelectTrigger, SelectValue, SelectContent, SelectItem,
+} from "@/components/ui/select";
+import { TEMPLATES } from "@/data/library-mock";
+import { CANDIDATES, ROLES, CURRENT_RECRUITER, ORG } from "@/data/mock";
+import { cn } from "@/lib/utils";
+import type { Template, TemplateChannel, TemplateStage } from "@/data/library-mock";
+
+const CHANNEL_CFG = {
+  sms:        { label: "SMS",                icon: MessageSquareText, color: "text-stellar",     bg: "bg-stellar-50" },
+  email:      { label: "Email",              icon: Mail,              color: "text-stellar",     bg: "bg-stellar-50" },
+  voicemail:  { label: "Voicemail",          icon: Voicemail,         color: "text-quantum",     bg: "bg-mist" },
+  screening:  { label: "Screening questions",icon: ListChecks,        color: "text-success-ink", bg: "bg-success-soft" },
+} as const;
+
+export default function TemplatesPage() {
+  const [activeChannel, setActiveChannel] = useState<TemplateChannel | "all">("all");
+  const [stageFilter, setStageFilter] = useState<TemplateStage | "all">("all");
+  const [query, setQuery] = useState("");
+  const [selectedId, setSelectedId] = useState<string>(TEMPLATES[0].id);
+  const [previewCandidateId, setPreviewCandidateId] = useState<string>(CANDIDATES[0]?.id || "");
+
+  const filtered = useMemo(() => {
+    let out = TEMPLATES;
+    if (activeChannel !== "all") out = out.filter((t) => t.channel === activeChannel);
+    if (stageFilter !== "all") out = out.filter((t) => t.stage === stageFilter);
+    if (query) {
+      const q = query.toLowerCase();
+      out = out.filter((t) =>
+        t.name.toLowerCase().includes(q) ||
+        t.body.toLowerCase().includes(q) ||
+        t.description.toLowerCase().includes(q)
+      );
+    }
+    return out;
+  }, [activeChannel, stageFilter, query]);
+
+  const selected = TEMPLATES.find((t) => t.id === selectedId) || filtered[0];
+  const previewCandidate = CANDIDATES.find((c) => c.id === previewCandidateId) || CANDIDATES[0];
+  const previewRole = ROLES.find((r) => r.id === previewCandidate?.roleId);
+
+  return (
+    <div className="p-4 lg:p-6 xl:p-8 max-w-[1400px] mx-auto">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-5">
+        <div>
+          <h1 className="mb-1">Templates</h1>
+          <p className="text-muted-fg t-body-large">
+            {TEMPLATES.length} templates across SMS, email, voicemail, and screening question sets.
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm">
+            <Tag className="h-3.5 w-3.5" /> Manage tags
+          </Button>
+          <Button size="sm">
+            <Plus className="h-3.5 w-3.5" /> New template
+          </Button>
+        </div>
+      </div>
+
+      {/* Channel tabs */}
+      <Tabs value={activeChannel} onValueChange={(v) => setActiveChannel(v as any)}>
+        <TabsList className="mb-4 flex-wrap h-auto">
+          <TabsTrigger value="all">All</TabsTrigger>
+          {Object.entries(CHANNEL_CFG).map(([k, c]) => {
+            const Icon = c.icon;
+            const count = TEMPLATES.filter((t) => t.channel === k).length;
+            return (
+              <TabsTrigger key={k} value={k} className="gap-1.5">
+                <Icon className="h-3.5 w-3.5" />
+                {c.label}
+                <span className="t-label-small bg-mist text-muted-fg px-1.5 rounded-pill">{count}</span>
+              </TabsTrigger>
+            );
+          })}
+        </TabsList>
+
+        <TabsContent value={activeChannel} className="mt-0">
+          <div className="grid grid-cols-1 lg:grid-cols-[400px_1fr] gap-4 lg:gap-5">
+            {/* ─── List column ────────────────────────────────────── */}
+            <div className="space-y-3">
+              <Card>
+                <CardContent className="p-3 flex flex-col gap-2">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted" />
+                    <Input
+                      placeholder="Search templates…"
+                      value={query} onChange={(e) => setQuery(e.target.value)}
+                      className="pl-9"
+                    />
+                  </div>
+                  <Select value={stageFilter} onValueChange={(v) => setStageFilter(v as any)}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All stages</SelectItem>
+                      <SelectItem value="consent">Consent</SelectItem>
+                      <SelectItem value="follow-up">Follow-up</SelectItem>
+                      <SelectItem value="screening">Screening</SelectItem>
+                      <SelectItem value="offer">Offer</SelectItem>
+                      <SelectItem value="rejection">Rejection</SelectItem>
+                      <SelectItem value="general">General</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </CardContent>
+              </Card>
+
+              {filtered.length === 0 ? (
+                <Card className="border-dashed">
+                  <CardContent className="py-10 text-center">
+                    <div className="t-title-medium text-cosmic mb-1">No templates match</div>
+                    <p className="t-body-small text-muted-fg">Try a different filter or create a new one.</p>
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="space-y-2">
+                  {filtered.map((t) => (
+                    <TemplateListItem
+                      key={t.id}
+                      template={t}
+                      isSelected={t.id === selectedId}
+                      onClick={() => setSelectedId(t.id)}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* ─── Preview column ─────────────────────────────────── */}
+            {selected && previewCandidate && previewRole && (
+              <TemplatePreview
+                template={selected}
+                candidate={previewCandidate}
+                role={previewRole}
+                allCandidates={CANDIDATES.slice(0, 12)}
+                onCandidateChange={setPreviewCandidateId}
+              />
+            )}
+          </div>
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+}
+
+function TemplateListItem({ template: t, isSelected, onClick }: { template: Template; isSelected: boolean; onClick: () => void }) {
+  const cfg = CHANNEL_CFG[t.channel];
+  const Icon = cfg.icon;
+
+  return (
+    <button
+      onClick={onClick}
+      className={cn(
+        "w-full text-left rounded-lg border bg-white p-3 transition-all focus-ring",
+        isSelected
+          ? "border-stellar shadow-2 ring-1 ring-stellar/20"
+          : "border-border hover:border-stellar/30 hover:shadow-2"
+      )}
+    >
+      <div className="flex items-start gap-3">
+        <div className={cn("h-8 w-8 rounded-md flex items-center justify-center shrink-0", cfg.bg)}>
+          <Icon className={cn("h-4 w-4", cfg.color)} />
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-1.5 mb-0.5">
+            <span className="t-label-large text-dark truncate">{t.name}</span>
+            {t.isFavorite && <Star className="h-3 w-3 fill-warning text-warning shrink-0" />}
+            {t.isLocked && <Lock className="h-3 w-3 text-muted shrink-0" />}
+          </div>
+          <p className="t-body-small text-muted-fg line-clamp-2 mb-2">{t.description}</p>
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <Badge variant="outline" size="sm" className="capitalize">{t.stage}</Badge>
+            <Badge variant="neutral" size="sm" className="gap-0.5">
+              <Hash className="h-2.5 w-2.5" /> {t.rolesUsed} role{t.rolesUsed === 1 ? "" : "s"}
+            </Badge>
+            {t.lastUsed && (
+              <span className="t-label-small text-muted ml-auto">{t.lastUsed}</span>
+            )}
+          </div>
+        </div>
+      </div>
+    </button>
+  );
+}
+
+function resolveMergeFields(text: string, candidate: any, role: any): string {
+  const recruiterFirst = CURRENT_RECRUITER.name.split(" ")[0];
+  const candidateFirst = candidate.name.split(" ")[0];
+  const map: Record<string, string> = {
+    firstName: candidateFirst,
+    candidateFullName: candidate.name,
+    phone: candidate.phone,
+    email: candidate.email,
+    recruiterFirstName: recruiterFirst,
+    recruiterFullName: CURRENT_RECRUITER.name,
+    recruiterTitle: "Senior Talent Partner",
+    recruiterCallback: "+1 (628) 555-0184",
+    orgName: ORG.name,
+    roleTitle: role.title,
+    teamName: role.team,
+    location: role.location,
+    jdSummary: role.jdSummary,
+    consentLink: "northwind.connx.app/c/k7Yh2",
+    callbackTime: "Tuesday at 2:00 PM",
+  };
+  return text.replace(/\{\{(\w+)\}\}/g, (_, key) => map[key] ?? `{{${key}}}`);
+}
+
+// Highlight unresolved merge fields visually
+function renderWithMergeHighlight(text: string, candidate: any, role: any) {
+  const resolved = resolveMergeFields(text, candidate, role);
+  const parts = resolved.split(/(\{\{\w+\}\})/g);
+  return parts.map((p, i) =>
+    /^\{\{\w+\}\}$/.test(p)
+      ? <span key={i} className="bg-warning-soft text-warning-ink px-1 rounded-sm">{p}</span>
+      : <span key={i}>{p}</span>
+  );
+}
+
+function TemplatePreview({
+  template: t, candidate, role, allCandidates, onCandidateChange,
+}: {
+  template: Template;
+  candidate: any;
+  role: any;
+  allCandidates: any[];
+  onCandidateChange: (id: string) => void;
+}) {
+  const cfg = CHANNEL_CFG[t.channel];
+
+  return (
+    <div className="space-y-4">
+      {/* Header card */}
+      <Card>
+        <CardContent className="p-5">
+          <div className="flex items-start gap-3 mb-3">
+            <div className={cn("h-10 w-10 rounded-md flex items-center justify-center shrink-0", cfg.bg)}>
+              <cfg.icon className={cn("h-4 w-4", cfg.color)} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 flex-wrap mb-1">
+                <h5 className="t-title-medium text-cosmic">{t.name}</h5>
+                {t.isLocked && (
+                  <Badge variant="neutral" size="sm" className="gap-1">
+                    <Lock className="h-2.5 w-2.5" /> Admin-managed
+                  </Badge>
+                )}
+              </div>
+              <p className="t-body-small text-muted-fg">{t.description}</p>
+            </div>
+            <div className="flex items-center gap-1 shrink-0">
+              <Button variant="ghost" size="icon-sm" aria-label="Toggle favourite">
+                <Star className={cn("h-3.5 w-3.5", t.isFavorite && "fill-warning text-warning")} />
+              </Button>
+              <Button variant="ghost" size="icon-sm" aria-label="Duplicate">
+                <Copy className="h-3.5 w-3.5" />
+              </Button>
+              <Button variant="ghost" size="icon-sm" disabled={t.isLocked} aria-label="Edit">
+                <Edit3 className="h-3.5 w-3.5" />
+              </Button>
+              <Button variant="ghost" size="icon-sm" disabled={t.isLocked} aria-label="Delete" className="text-danger-ink">
+                <Trash2 className="h-3.5 w-3.5" />
+              </Button>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-1.5 flex-wrap pt-3 border-t border-border">
+            <Badge variant="outline" size="sm" className="capitalize">{t.stage}</Badge>
+            <Badge variant="neutral" size="sm">Used in {t.rolesUsed} role{t.rolesUsed === 1 ? "" : "s"}</Badge>
+            {t.lastUsed && <Badge variant="neutral" size="sm">Last used {t.lastUsed}</Badge>}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Live preview */}
+      <Card>
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <Eye className="h-4 w-4 text-stellar" />
+              <CardTitle>Live preview</CardTitle>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="t-label-small text-muted-fg whitespace-nowrap">Render against:</span>
+              <Select value={candidate.id} onValueChange={onCandidateChange}>
+                <SelectTrigger className="w-[200px] h-8">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {allCandidates.map((c) => (
+                    <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {t.channel === "email" && t.subject && (
+            <div className="mb-3 pb-3 border-b border-border">
+              <div className="t-label-small text-muted-fg mb-1">Subject</div>
+              <div className="t-title-medium text-cosmic">
+                {renderWithMergeHighlight(t.subject, candidate, role)}
+              </div>
+            </div>
+          )}
+
+          {t.channel === "sms" ? <SmsPreview body={t.body} candidate={candidate} role={role} />
+            : t.channel === "voicemail" ? <VoicemailPreview body={t.body} candidate={candidate} role={role} />
+            : t.channel === "screening" ? <ScreeningPreview body={t.body} />
+            : <EmailPreview body={t.body} candidate={candidate} role={role} />}
+
+          {/* Merge field legend */}
+          <div className="mt-4 pt-3 border-t border-border flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 t-body-small text-muted-fg">
+              <span className="bg-warning-soft text-warning-ink px-1.5 py-0.5 rounded-sm t-label-small">{"{{merge}}"}</span>
+              <span>Unresolved merge fields highlighted</span>
+            </div>
+            <Button variant="link" size="sm">View all merge fields <ChevronRight className="h-3 w-3" /></Button>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+function SmsPreview({ body, candidate, role }: { body: string; candidate: any; role: any }) {
+  return (
+    <div className="bg-mist rounded-xl p-4 max-w-[380px]">
+      <div className="t-label-small text-muted-fg mb-2 flex items-center justify-between">
+        <span>To {candidate.phone}</span>
+        <span>SMS · ~{Math.ceil(body.length / 160)} segment{body.length > 160 ? "s" : ""}</span>
+      </div>
+      <div className="bg-white rounded-2xl rounded-tl-sm px-4 py-3 t-body-medium text-dark whitespace-pre-wrap break-words shadow-1">
+        {renderWithMergeHighlight(body, candidate, role)}
+      </div>
+      <div className="t-label-small text-muted-fg mt-2 text-right">{body.length} chars</div>
+    </div>
+  );
+}
+
+function EmailPreview({ body, candidate, role }: { body: string; candidate: any; role: any }) {
+  return (
+    <div className="bg-white border border-border rounded-lg overflow-hidden">
+      <div className="bg-mist px-4 py-2 border-b border-border flex items-center gap-2">
+        <span className="t-label-small text-muted-fg">From:</span>
+        <span className="t-body-small">{CURRENT_RECRUITER.name} &lt;{CURRENT_RECRUITER.email}&gt;</span>
+      </div>
+      <div className="bg-mist px-4 py-2 border-b border-border flex items-center gap-2">
+        <span className="t-label-small text-muted-fg">To:</span>
+        <span className="t-body-small">{candidate.email}</span>
+      </div>
+      <div className="p-5 t-body-medium text-dark whitespace-pre-wrap break-words leading-relaxed">
+        {renderWithMergeHighlight(body, candidate, role)}
+      </div>
+    </div>
+  );
+}
+
+function VoicemailPreview({ body, candidate, role }: { body: string; candidate: any; role: any }) {
+  return (
+    <div className="bg-mist rounded-lg p-4">
+      <div className="flex items-center gap-2 mb-3">
+        <div className="h-8 w-8 rounded-pill bg-quantum/10 flex items-center justify-center">
+          <Voicemail className="h-4 w-4 text-quantum" />
+        </div>
+        <div className="flex-1">
+          <div className="t-label-large text-dark">Voicemail script</div>
+          <div className="t-body-small text-muted-fg">~{Math.ceil(body.length / 800 * 30)} seconds estimated</div>
+        </div>
+      </div>
+      <div className="bg-white rounded-md p-3 t-body-medium text-dark whitespace-pre-wrap break-words italic border-l-2 border-quantum">
+        "{renderWithMergeHighlight(body, candidate, role)}"
+      </div>
+    </div>
+  );
+}
+
+function ScreeningPreview({ body }: { body: string }) {
+  // Parse numbered questions
+  const lines = body.split("\n").filter((l) => l.trim());
+  return (
+    <div className="space-y-2">
+      {lines.map((line, i) => {
+        const m = line.match(/^(\d+)\.\s*(.*)$/);
+        if (m) {
+          return (
+            <div key={i} className="flex items-start gap-3 p-3 bg-mist rounded-md">
+              <div className="h-6 w-6 rounded-pill bg-stellar text-white flex items-center justify-center t-label-small shrink-0 tabular-nums">
+                {m[1]}
+              </div>
+              <p className="flex-1 t-body-medium text-dark pt-0.5">{m[2]}</p>
+            </div>
+          );
+        }
+        return <p key={i} className="t-body-small text-muted-fg">{line}</p>;
+      })}
+    </div>
+  );
+}
+<<< END FILE
+
+==============================================================================
+>>> FILE: src/App.tsx
+==============================================================================
+import { createBrowserRouter, RouterProvider, Navigate } from "react-router-dom";
+import { AppShell } from "@/components/layout/app-shell";
+import { PagePlaceholder } from "@/components/connx/page-placeholder";
+import DashboardPage from "@/pages/recruiter/dashboard";
+import RolesPage from "@/pages/recruiter/roles";
+import RoleDetailPage from "@/pages/recruiter/role-detail";
+import ConsentCenterPage from "@/pages/recruiter/consent-center";
+import TemplatesPage from "@/pages/recruiter/templates";
+
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <AppShell />,
+    children: [
+      // Recruiter
+      { index: true, element: <DashboardPage /> },
+      { path: "roles", element: <RolesPage /> },
+      { path: "roles/:roleId", element: <RoleDetailPage /> },
+      { path: "consent", element: <ConsentCenterPage /> },
+      { path: "dialer", element: <PagePlaceholder title="Auto Dialer" description="The hero flow — queue builder, customise call view, active call. Ships in Pass 4." /> },
+      { path: "bulk", element: <PagePlaceholder title="Bulk communication" description="SMS, email, and WhatsApp campaigns. Ships in Pass 5." /> },
+      { path: "timeline", element: <PagePlaceholder title="Candidate timeline" description="Ships in Pass 5." /> },
+      { path: "candidates/:id", element: <PagePlaceholder title="Candidate profile" description="Ships in Pass 5." /> },
+      { path: "templates", element: <TemplatesPage /> },
+
+      // Hiring Manager (Pass 6)
+      { path: "hm", element: <PagePlaceholder title="Pipeline" description="Read-only view of all your open roles. Ships in Pass 6." /> },
+      { path: "hm/candidates/:id", element: <PagePlaceholder title="Candidate review" /> },
+      { path: "hm/approvals", element: <PagePlaceholder title="Approvals queue" /> },
+      { path: "hm/digest", element: <PagePlaceholder title="Daily digest" /> },
+
+      // Recruitment Lead (Pass 7)
+      { path: "lead", element: <PagePlaceholder title="Team analytics" description="Ships in Pass 7." /> },
+      { path: "lead/leaderboard", element: <PagePlaceholder title="Leaderboard" /> },
+      { path: "lead/goals", element: <PagePlaceholder title="Goals & SLAs" /> },
+      { path: "lead/team", element: <PagePlaceholder title="Team members" /> },
+
+      // Shared (Pass 8)
+      { path: "settings", element: <PagePlaceholder title="Settings" description="Ships in Pass 8." /> },
+      { path: "integrations", element: <PagePlaceholder title="Integrations" /> },
+
+      { path: "*", element: <Navigate to="/" replace /> },
+    ],
+  },
+]);
+
+export function AppRouter() {
+  return <RouterProvider router={router} />;
+}
+<<< END FILE

@@ -1,0 +1,104 @@
+/* ─── CONNX / Leoforce Design Tokens (Tailwind v4) ─────────────── */
+
+@theme {
+  /* Brand */
+  --color-cosmic: #2D2E67;
+  --color-cosmic-50: #EFEFF7;
+  --color-cosmic-100: #D5D6E9;
+  --color-stellar: #3E83FA;
+  --color-stellar-50: #EBF2FE;
+  --color-stellar-100: #C7DAFD;
+  --color-stellar-700: #1E5FD1;
+
+  /* Supporting */
+  --color-dark: #373A40;
+  --color-mist: #F6F9FD;
+
+  /* Accents */
+  --color-nebula: #48E29A;
+  --color-nebula-ink: #16883D;
+  --color-nebula-soft: #E8FAF1;
+  --color-flare: #C8FF73;
+  --color-quantum: #7717C7;
+  --color-violet: #B030FF;
+
+  /* Semantic */
+  --color-success: #48E29A;
+  --color-success-ink: #16883D;
+  --color-success-soft: #E8FAF1;
+  --color-warning: #F59E0B;
+  --color-warning-ink: #92400E;
+  --color-warning-soft: #FEF3C7;
+  --color-danger: #DC2626;
+  --color-danger-ink: #991B1B;
+  --color-danger-soft: #FEE2E2;
+
+  /* Chrome */
+  --color-cx-border: #E8EBF0;
+  --color-border-strong: #D1D5DB;
+  --color-muted-fg: rgba(55, 58, 64, 0.7);
+
+  /* Radii */
+  --radius-pill: 999px;
+
+  /* Shadows */
+  --shadow-cx-1: 0 1px 2px rgba(45, 46, 103, 0.06);
+  --shadow-cx-2: 0 2px 8px rgba(45, 46, 103, 0.08);
+  --shadow-cx-3: 0 8px 24px rgba(45, 46, 103, 0.10);
+}
+
+/* ─── Type utilities ─────────────────────────────────────────── */
+@layer utilities {
+  .t-display-large   { font-size: 48px; line-height: 1.2;  font-weight: 400; }
+  .t-display-medium  { font-size: 40px; line-height: 1.2;  font-weight: 400; }
+  .t-display-small   { font-size: 32px; line-height: 1.25; font-weight: 400; }
+  .t-headline-large  { font-size: 32px; line-height: 1.25; font-weight: 500; }
+  .t-headline-medium { font-size: 28px; line-height: 1.3;  font-weight: 500; }
+  .t-headline-small  { font-size: 24px; line-height: 1.3;  font-weight: 600; }
+  .t-title-large     { font-size: 22px; line-height: 1.35; font-weight: 600; }
+  .t-title-medium    { font-size: 16px; line-height: 1.4;  font-weight: 600; }
+  .t-title-small     { font-size: 14px; line-height: 1.4;  font-weight: 700; }
+  .t-body-large      { font-size: 16px; line-height: 1.6;  font-weight: 400; }
+  .t-body-medium     { font-size: 14px; line-height: 1.6;  font-weight: 400; }
+  .t-body-small      { font-size: 12px; line-height: 1.5;  font-weight: 400; }
+  .t-label-large     { font-size: 14px; line-height: 1.4;  font-weight: 600; }
+  .t-label-medium    { font-size: 12px; line-height: 1.35; font-weight: 600; }
+  .t-label-small     { font-size: 10px; line-height: 1.3;  font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
+
+  .tabular-nums { font-variant-numeric: tabular-nums; }
+
+  .leo-gradient {
+    background: linear-gradient(135deg, #3E83FA 0%, #7717C7 100%);
+  }
+  .leo-avatar-gradient {
+    background: linear-gradient(135deg, #3E83FA 0%, #7717C7 100%);
+  }
+
+  .focus-ring:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(62, 131, 250, 0.25);
+  }
+
+  .shadow-cx-1 { box-shadow: var(--shadow-cx-1); }
+  .shadow-cx-2 { box-shadow: var(--shadow-cx-2); }
+  .shadow-cx-3 { box-shadow: var(--shadow-cx-3); }
+}
+
+/* ─── CONNX scoped base ────────────────────────────────────────── */
+.connx-root {
+  background: #F6F9FD;
+  color: #373A40;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.connx-root h1 { font-size: 32px; line-height: 1.25; font-weight: 500; color: #2D2E67; margin: 0; }
+.connx-root h2 { font-size: 28px; line-height: 1.3;  font-weight: 500; color: #2D2E67; margin: 0; }
+.connx-root h3 { font-size: 24px; line-height: 1.3;  font-weight: 600; color: #2D2E67; margin: 0; }
+.connx-root h4 { font-size: 22px; line-height: 1.35; font-weight: 600; color: #373A40; margin: 0; }
+.connx-root h5 { font-size: 16px; line-height: 1.4;  font-weight: 600; color: #373A40; margin: 0; }
+.connx-root h6 { font-size: 14px; line-height: 1.4;  font-weight: 700; color: #373A40; margin: 0; }
+.connx-root p  { font-size: 14px; line-height: 1.6;  font-weight: 400; color: #373A40; margin: 0; }
+.connx-root a  { color: #3E83FA; text-decoration: none; }
+.connx-root a:hover { text-decoration: underline; }

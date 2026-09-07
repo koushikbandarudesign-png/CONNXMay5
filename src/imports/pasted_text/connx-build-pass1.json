@@ -1,0 +1,2603 @@
+==============================================================================
+CONNX — Build Pass 1 (Foundation)
+==============================================================================
+
+This bundle contains all 38 files for Pass 1.
+Each file is delimited by:
+  >>> FILE: <relative path>
+  ... contents ...
+  <<< END FILE
+
+Paste each block into Figma Make at the indicated path.
+Order is already optimised — config files first, then dependencies, then app entry last.
+
+==============================================================================
+>>> FILE: package.json
+==============================================================================
+{
+  "name": "connx",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@radix-ui/react-avatar": "^1.0.4",
+    "@radix-ui/react-checkbox": "^1.0.4",
+    "@radix-ui/react-dialog": "^1.0.5",
+    "@radix-ui/react-dropdown-menu": "^2.0.6",
+    "@radix-ui/react-label": "^2.0.2",
+    "@radix-ui/react-popover": "^1.0.7",
+    "@radix-ui/react-progress": "^1.0.3",
+    "@radix-ui/react-scroll-area": "^1.0.5",
+    "@radix-ui/react-select": "^2.0.0",
+    "@radix-ui/react-separator": "^1.0.3",
+    "@radix-ui/react-slot": "^1.0.2",
+    "@radix-ui/react-switch": "^1.0.3",
+    "@radix-ui/react-tabs": "^1.0.4",
+    "@radix-ui/react-toast": "^1.1.5",
+    "@radix-ui/react-tooltip": "^1.0.7",
+    "class-variance-authority": "^0.7.0",
+    "clsx": "^2.1.0",
+    "cmdk": "^0.2.1",
+    "framer-motion": "^11.0.0",
+    "lucide-react": "^0.383.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.22.0",
+    "recharts": "^2.12.0",
+    "sonner": "^1.4.0",
+    "tailwind-merge": "^2.2.0",
+    "tailwindcss-animate": "^1.0.7"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "@vitejs/plugin-react": "^4.2.0",
+    "autoprefixer": "^10.4.0",
+    "postcss": "^8.4.0",
+    "tailwindcss": "^3.4.0",
+    "typescript": "^5.3.0",
+    "vite": "^5.0.0"
+  }
+}
+<<< END FILE
+
+==============================================================================
+>>> FILE: tsconfig.json
+==============================================================================
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "useDefineForClassFields": true,
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "skipLibCheck": true,
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react-jsx",
+    "strict": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "noFallthroughCasesInSwitch": true,
+    "baseUrl": ".",
+    "paths": { "@/*": ["./src/*"] }
+  },
+  "include": ["src", "vite.config.ts", "tailwind.config.ts"],
+  "references": [{ "path": "./tsconfig.node.json" }]
+}
+<<< END FILE
+
+==============================================================================
+>>> FILE: tsconfig.node.json
+==============================================================================
+{
+  "compilerOptions": {
+    "composite": true,
+    "skipLibCheck": true,
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "allowSyntheticDefaultImports": true,
+    "strict": true
+  },
+  "include": ["vite.config.ts", "tailwind.config.ts"]
+}
+<<< END FILE
+
+==============================================================================
+>>> FILE: vite.config.ts
+==============================================================================
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import path from "node:path";
+
+export default defineConfig({
+  plugins: [react()],
+  resolve: {
+    alias: { "@": path.resolve(__dirname, "./src") },
+  },
+});
+<<< END FILE
+
+==============================================================================
+>>> FILE: postcss.config.js
+==============================================================================
+export default {
+  plugins: {
+    tailwindcss: {},
+    autoprefixer: {},
+  },
+};
+<<< END FILE
+
+==============================================================================
+>>> FILE: tailwind.config.ts
+==============================================================================
+import type { Config } from "tailwindcss";
+
+const config: Config = {
+  darkMode: ["class"],
+  content: ["./index.html", "./src/**/*.{ts,tsx}"],
+  theme: {
+    container: {
+      center: true,
+      padding: "1rem",
+      screens: { "2xl": "1200px" },
+    },
+    screens: {
+      sm: "320px",
+      md: "600px",
+      lg: "1024px",
+      xl: "1440px",
+    },
+    extend: {
+      // ─── Leoforce brand ─────────────────────────────────────────
+      colors: {
+        // Brand
+        cosmic: { DEFAULT: "#2D2E67", 50: "#EFEFF7", 100: "#D5D6E9" },
+        stellar: { DEFAULT: "#3E83FA", 50: "#EBF2FE", 100: "#C7DAFD", 700: "#1E5FD1" },
+
+        // Supporting
+        dark: "#373A40",
+        mist: "#F6F9FD",
+
+        // Accents
+        nebula: { DEFAULT: "#48E29A", ink: "#16883D", soft: "#E8FAF1" },
+        flare: "#C8FF73",
+        quantum: "#7717C7",
+        violet: "#B030FF",
+
+        // Semantic
+        success: { DEFAULT: "#48E29A", ink: "#16883D", soft: "#E8FAF1" },
+        warning: { DEFAULT: "#F59E0B", ink: "#92400E", soft: "#FEF3C7" },
+        danger: { DEFAULT: "#DC2626", ink: "#991B1B", soft: "#FEE2E2" },
+
+        // UI chrome
+        border: "#E8EBF0",
+        "border-strong": "#D1D5DB",
+        muted: { DEFAULT: "rgba(55,58,64,0.5)", fg: "rgba(55,58,64,0.7)" },
+
+        // shadcn token aliases — mapped to Leoforce
+        background: "#F6F9FD",
+        foreground: "#373A40",
+        card: { DEFAULT: "#FFFFFF", foreground: "#373A40" },
+        popover: { DEFAULT: "#FFFFFF", foreground: "#373A40" },
+        primary: { DEFAULT: "#3E83FA", foreground: "#FFFFFF" },
+        secondary: { DEFAULT: "#F6F9FD", foreground: "#373A40" },
+        accent: { DEFAULT: "#EBF2FE", foreground: "#2D2E67" },
+        destructive: { DEFAULT: "#DC2626", foreground: "#FFFFFF" },
+        input: "#D1D5DB",
+        ring: "#3E83FA",
+      },
+
+      // ─── Typography (M3 scale) ─────────────────────────────────
+      fontFamily: {
+        sans: ["Tenorite", "Inter", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "sans-serif"],
+      },
+      fontSize: {
+        // M3 roles
+        "display-l": ["48px", { lineHeight: "1.2", fontWeight: "400" }],
+        "display-m": ["40px", { lineHeight: "1.2", fontWeight: "400" }],
+        "display-s": ["32px", { lineHeight: "1.25", fontWeight: "400" }],
+        "headline-l": ["32px", { lineHeight: "1.25", fontWeight: "500" }],
+        "headline-m": ["28px", { lineHeight: "1.3", fontWeight: "500" }],
+        "headline-s": ["24px", { lineHeight: "1.3", fontWeight: "600" }],
+        "title-l": ["22px", { lineHeight: "1.35", fontWeight: "600" }],
+        "title-m": ["16px", { lineHeight: "1.4", fontWeight: "600" }],
+        "title-s": ["14px", { lineHeight: "1.4", fontWeight: "700" }],
+        "body-l": ["16px", { lineHeight: "1.6", fontWeight: "400" }],
+        "body-m": ["14px", { lineHeight: "1.6", fontWeight: "400" }],
+        "body-s": ["12px", { lineHeight: "1.5", fontWeight: "400" }],
+        "label-l": ["14px", { lineHeight: "1.4", fontWeight: "600" }],
+        "label-m": ["12px", { lineHeight: "1.35", fontWeight: "600" }],
+        "label-s": ["10px", { lineHeight: "1.3", fontWeight: "700", letterSpacing: "0.04em" }],
+      },
+
+      // ─── Spacing (4px base) ───────────────────────────────────
+      spacing: {
+        "1": "4px", "2": "8px", "3": "12px", "4": "16px", "5": "20px",
+        "6": "24px", "7": "32px", "8": "40px", "9": "48px", "10": "56px",
+        "11": "80px", "12": "112px",
+      },
+
+      // ─── Radii ────────────────────────────────────────────────
+      borderRadius: {
+        sm: "4px",
+        md: "6px",
+        lg: "8px",
+        xl: "12px",
+        pill: "999px",
+      },
+
+      // ─── Shadows (cool-tinted) ────────────────────────────────
+      boxShadow: {
+        "1": "0 1px 2px rgba(45,46,103,0.06)",
+        "2": "0 2px 8px rgba(45,46,103,0.08)",
+        "3": "0 8px 24px rgba(45,46,103,0.10)",
+        focus: "0 0 0 3px rgba(62,131,250,0.25)",
+      },
+
+      transitionDuration: { DEFAULT: "180ms" },
+      transitionTimingFunction: { DEFAULT: "cubic-bezier(0,0,0.2,1)" },
+
+      keyframes: {
+        "fade-in": { from: { opacity: "0" }, to: { opacity: "1" } },
+        "slide-up": { from: { transform: "translateY(8px)", opacity: "0" }, to: { transform: "translateY(0)", opacity: "1" } },
+        "pulse-ring": {
+          "0%": { boxShadow: "0 0 0 0 rgba(72,226,154,0.5)" },
+          "70%": { boxShadow: "0 0 0 8px rgba(72,226,154,0)" },
+          "100%": { boxShadow: "0 0 0 0 rgba(72,226,154,0)" },
+        },
+      },
+      animation: {
+        "fade-in": "fade-in 180ms ease-out",
+        "slide-up": "slide-up 180ms ease-out",
+        "pulse-ring": "pulse-ring 2s infinite",
+      },
+    },
+  },
+  plugins: [require("tailwindcss-animate")],
+};
+
+export default config;
+<<< END FILE
+
+==============================================================================
+>>> FILE: index.html
+==============================================================================
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <title>CONNX — Intelligent Recruiter Communication</title>
+    <meta name="description" content="Outcome-based recruiter communication platform. Built on Leoforce." />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+<<< END FILE
+
+==============================================================================
+>>> FILE: README.md
+==============================================================================
+# CONNX — Build Pass 1
+
+Foundation: design tokens, layout shell, sidebar, top bar, persona switcher, ⌘K command palette, routing, mock data.
+
+## How to load this into Figma Make
+
+Make accepts modular React projects. Paste each file in this exact folder structure. The order doesn't matter, but easiest is:
+
+1. **Config files first** (root level):
+   - `package.json`
+   - `tailwind.config.ts`
+   - `vite.config.ts`
+   - `tsconfig.json`
+   - `tsconfig.node.json`
+   - `postcss.config.js`
+   - `index.html`
+
+2. **Styles & types**:
+   - `src/styles/globals.css`
+   - `src/types/index.ts`
+
+3. **Lib & data**:
+   - `src/lib/utils.ts`
+   - `src/lib/persona-context.tsx`
+   - `src/data/mock.ts`
+
+4. **UI primitives** (`src/components/ui/`): button, card, input, label, badge, avatar, tabs, dialog, sheet, dropdown-menu, command, tooltip, progress, separator, scroll-area
+
+5. **CONNX components** (`src/components/connx/`): logo, page-placeholder
+
+6. **Layout** (`src/components/layout/`): sidebar, persona-switcher, top-bar, app-shell
+
+7. **Pages**: `src/pages/recruiter/dashboard.tsx`
+
+8. **App entry**: `src/App.tsx`, `src/main.tsx`
+
+## What you'll see
+
+- Dashboard with a personalised greeting and 4 metric cards
+- Left sidebar with grouped nav (Workspace / Outreach / Library)
+- Top bar with search, ⌘K command palette, persona switcher, notifications, account menu
+- **Try the persona switcher** in the top right — sidebar adapts per persona (Recruiter / Hiring Manager / Recruitment Lead)
+- **Press ⌘K** to open the natural-language command bar
+- Click any sidebar item — placeholders are wired and ready for the next pass
+
+## Design tokens already wired
+
+- Colors: `cosmic`, `stellar`, `mist`, `nebula`, `flare`, `quantum`, `violet`, `success`, `warning`, `danger`
+- Type: `t-display-large` through `t-label-small` (full M3 scale)
+- Spacing: 4px base via Tailwind's spacing scale (1=4px, 2=8px, 3=12px, etc.)
+- Radii: `rounded-sm` (4px), `rounded-md` (6px), `rounded-lg` (8px), `rounded-xl` (12px), `rounded-pill`
+- Shadows: `shadow-1`, `shadow-2`, `shadow-3`, `shadow-focus` (all cool-tinted)
+
+## What's next (Pass 2)
+
+Recruiter Dashboard fully built — Today's Action Plan, pipeline funnels, callbacks tracker, best-time heatmap, LEO Assist surface.
+<<< END FILE
+
+==============================================================================
+>>> FILE: src/styles/globals.css
+==============================================================================
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── Leoforce Design Tokens ───────────────────────────────────── */
+:root {
+  --cosmic-indigo: #2D2E67;
+  --stellar-blue: #3E83FA;
+  --dark-matter: #373A40;
+  --lunar-mist: #F6F9FD;
+  --white: #FFFFFF;
+  --nebula-green: #48E29A;
+  --nebula-green-ink: #16883D;
+  --solar-flare: #C8FF73;
+  --quantum-purple: #7717C7;
+  --galactic-violet: #B030FF;
+
+  --border: #E8EBF0;
+  --border-strong: #D1D5DB;
+  --text-muted: rgba(55, 58, 64, 0.5);
+  --text-subtle: rgba(55, 58, 64, 0.7);
+
+  --shadow-1: 0 1px 2px rgba(45, 46, 103, 0.06);
+  --shadow-2: 0 2px 8px rgba(45, 46, 103, 0.08);
+  --shadow-3: 0 8px 24px rgba(45, 46, 103, 0.10);
+  --shadow-focus: 0 0 0 3px rgba(62, 131, 250, 0.25);
+}
+
+/* ─── Base ──────────────────────────────────────────────────────── */
+* { border-color: var(--border); }
+
+html, body, #root {
+  height: 100%;
+  background: var(--lunar-mist);
+  color: var(--dark-matter);
+  font-family: 'Tenorite', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body { margin: 0; }
+
+/* HTML element defaults — mapped to M3 roles */
+h1 { font-size: 32px; line-height: 1.25; font-weight: 500; color: var(--cosmic-indigo); margin: 0; }
+h2 { font-size: 28px; line-height: 1.3;  font-weight: 500; color: var(--cosmic-indigo); margin: 0; }
+h3 { font-size: 24px; line-height: 1.3;  font-weight: 600; color: var(--cosmic-indigo); margin: 0; }
+h4 { font-size: 22px; line-height: 1.35; font-weight: 600; color: var(--dark-matter); margin: 0; }
+h5 { font-size: 16px; line-height: 1.4;  font-weight: 600; color: var(--dark-matter); margin: 0; }
+h6 { font-size: 14px; line-height: 1.4;  font-weight: 700; color: var(--dark-matter); margin: 0; }
+p  { font-size: 14px; line-height: 1.6;  font-weight: 400; color: var(--dark-matter); margin: 0; }
+a  { color: var(--stellar-blue); text-decoration: none; }
+a:hover { text-decoration: underline; }
+small { font-size: 12px; color: var(--text-subtle); }
+
+/* ─── Type utilities ─────────────────────────────────────────── */
+@layer utilities {
+  .t-display-large   { font-size: 48px; line-height: 1.2;  font-weight: 400; }
+  .t-display-medium  { font-size: 40px; line-height: 1.2;  font-weight: 400; }
+  .t-display-small   { font-size: 32px; line-height: 1.25; font-weight: 400; }
+  .t-headline-large  { font-size: 32px; line-height: 1.25; font-weight: 500; }
+  .t-headline-medium { font-size: 28px; line-height: 1.3;  font-weight: 500; }
+  .t-headline-small  { font-size: 24px; line-height: 1.3;  font-weight: 600; }
+  .t-title-large     { font-size: 22px; line-height: 1.35; font-weight: 600; }
+  .t-title-medium    { font-size: 16px; line-height: 1.4;  font-weight: 600; }
+  .t-title-small     { font-size: 14px; line-height: 1.4;  font-weight: 700; }
+  .t-body-large      { font-size: 16px; line-height: 1.6;  font-weight: 400; }
+  .t-body-medium     { font-size: 14px; line-height: 1.6;  font-weight: 400; }
+  .t-body-small      { font-size: 12px; line-height: 1.5;  font-weight: 400; }
+  .t-label-large     { font-size: 14px; line-height: 1.4;  font-weight: 600; }
+  .t-label-medium    { font-size: 12px; line-height: 1.35; font-weight: 600; }
+  .t-label-small     { font-size: 10px; line-height: 1.3;  font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
+
+  .tabular-nums { font-variant-numeric: tabular-nums; }
+
+  /* The LEO Assist gradient surface (the only allowed product gradient) */
+  .leo-gradient {
+    background: linear-gradient(135deg, #3E83FA 0%, #7717C7 100%);
+  }
+  .leo-avatar-gradient {
+    background: linear-gradient(135deg, #3E83FA 0%, #7717C7 100%);
+  }
+
+  /* Focus rings — never remove */
+  .focus-ring:focus-visible {
+    outline: none;
+    box-shadow: var(--shadow-focus);
+  }
+}
+
+/* ─── Scrollbar (cool, subtle) ─────────────────────────────────── */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(45, 46, 103, 0.15); border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(45, 46, 103, 0.3); }
+
+/* ─── Selection ────────────────────────────────────────────────── */
+::selection { background: rgba(62, 131, 250, 0.2); color: var(--cosmic-indigo); }
+<<< END FILE
+
+==============================================================================
+>>> FILE: src/types/index.ts
+==============================================================================
+export type ConsentStatus = "pending" | "accepted" | "declined" | "expired" | "scheduled";
+
+export type CallDisposition = "shortlisted" | "rejected" | "on-hold" | "callback" | null;
+
+export type CallStatus =
+  | "pending"
+  | "dialing"
+  | "connected"
+  | "voicemail-dropped"
+  | "completed"
+  | "no-answer"
+  | "failed";
+
+export type RoleStage = "shortlisted" | "consented" | "screened" | "advanced" | "rejected";
+
+export type Persona = "recruiter" | "hm" | "lead";
+
+export type Panel = "metadata" | "resume" | "questions" | "notes" | "jd";
+export type Zone = "A" | "B" | "C";
+export type LayoutPref = Record<Zone, Panel>;
+
+export interface Candidate {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  currentRole: string;
+  currentCompany: string;
+  location: string;
+  source: "Workday" | "Greenhouse" | "Lever" | "iCIMS" | "Manual";
+  shortlistedAt: string;       // ISO
+  consentStatus: ConsentStatus;
+  consentSentAt?: string;
+  consentRespondedAt?: string;
+  scheduledCallAt?: string;
+  yearsExperience: number;
+  skills: string[];
+  resumeSummary: string;
+  resumeBullets: string[];
+  lastDisposition?: CallDisposition;
+  lastCallAt?: string;
+  callbackAt?: string;          // for callback tracker
+  roleId: string;
+  stage: RoleStage;
+  notes?: string;
+  aiSummary?: string;
+}
+
+export interface Role {
+  id: string;
+  title: string;
+  team: string;
+  hiringManager: string;
+  recruiter: string;
+  location: string;
+  openedAt: string;
+  targetCount: number;
+  shortlisted: number;
+  consented: number;
+  screened: number;
+  advanced: number;
+  rejected: number;
+  screeningQuestions: ScreeningQuestion[];
+  jdSummary: string;
+  jdFull: string;
+}
+
+export interface ScreeningQuestion {
+  id: string;
+  question: string;
+  type: "open" | "yes-no" | "rating";
+  required: boolean;
+}
+
+export interface CallEvent {
+  id: string;
+  candidateId: string;
+  roleId: string;
+  startedAt: string;
+  endedAt?: string;
+  durationSec?: number;
+  status: CallStatus;
+  disposition?: CallDisposition;
+  voicemailDropped?: boolean;
+  recordingUrl?: string;
+  aiSummary?: string;
+  notes?: string;
+}
+
+export interface TimelineEvent {
+  id: string;
+  candidateId: string;
+  type: "consent-sent" | "consent-accepted" | "consent-declined" | "call" | "voicemail" | "sms" | "email" | "note" | "stage-change";
+  at: string;
+  by?: string;
+  content: string;
+  meta?: Record<string, any>;
+}
+
+export interface Recruiter {
+  id: string;
+  name: string;
+  email: string;
+  team: string;
+  avatarColor?: string;
+}
+
+export interface DialerSession {
+  id: string;
+  roleId: string;
+  recruiterId: string;
+  queue: string[];           // candidate ids
+  currentIndex: number;
+  startedAt: string;
+  layout: LayoutPref;
+}
+<<< END FILE
+
+==============================================================================
+>>> FILE: src/lib/utils.ts
+==============================================================================
+import { type ClassValue, clsx } from "clsx";
+import { twMerge } from "tailwind-merge";
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
+
+// Format large numbers like 2.1k, 14.3M
+export function formatCompact(n: number): string {
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000) return `${(n / 1_000).toFixed(1)}k`;
+  return String(n);
+}
+
+// Format duration in seconds to mm:ss or h:mm:ss
+export function formatDuration(seconds: number): string {
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  const s = Math.floor(seconds % 60);
+  if (h > 0) return `${h}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+  return `${m}:${String(s).padStart(2, "0")}`;
+}
+
+// Relative time
+export function timeAgo(date: Date | string): string {
+  const d = typeof date === "string" ? new Date(date) : date;
+  const diff = (Date.now() - d.getTime()) / 1000;
+  if (diff < 60) return "just now";
+  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+  if (diff < 604800) return `${Math.floor(diff / 86400)}d ago`;
+  return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+}
+
+// Generate avatar initials
+export function initials(name: string): string {
+  return name.split(" ").map(s => s[0]).slice(0, 2).join("").toUpperCase();
+}
+<<< END FILE
+
+==============================================================================
+>>> FILE: src/lib/persona-context.tsx
+==============================================================================
+import { createContext, useContext, useState, type ReactNode } from "react";
+import type { Persona } from "@/types";
+
+interface PersonaCtx {
+  persona: Persona;
+  setPersona: (p: Persona) => void;
+}
+
+const Ctx = createContext<PersonaCtx | null>(null);
+
+export function PersonaProvider({ children }: { children: ReactNode }) {
+  const [persona, setPersona] = useState<Persona>("recruiter");
+  return <Ctx.Provider value={{ persona, setPersona }}>{children}</Ctx.Provider>;
+}
+
+export function usePersona() {
+  const ctx = useContext(Ctx);
+  if (!ctx) throw new Error("usePersona must be used within PersonaProvider");
+  return ctx;
+}
+
+export const PERSONA_LABEL: Record<Persona, string> = {
+  recruiter: "Recruiter",
+  hm: "Hiring Manager",
+  lead: "Recruitment Lead",
+};
+
+export const PERSONA_DESC: Record<Persona, string> = {
+  recruiter: "Day-to-day candidate outreach",
+  hm: "Pipeline review and approvals",
+  lead: "Team performance and goals",
+};
+<<< END FILE
+
+==============================================================================
+>>> FILE: src/data/mock.ts
+==============================================================================
+import type { Role, Candidate, Recruiter, TimelineEvent } from "@/types";
+
+// ─── The world: Northwind Labs ────────────────────────────────────
+// A 600-person Series C climate-tech firm hiring across eng, design,
+// data, and GTM. The recruiter we follow is Jordan Chen.
+
+export const ORG = {
+  name: "Northwind Labs",
+  industry: "Climate technology",
+  size: "600 employees",
+};
+
+export const CURRENT_RECRUITER: Recruiter = {
+  id: "rec-jordan",
+  name: "Jordan Chen",
+  email: "jordan@northwind.com",
+  team: "Engineering Talent",
+};
+
+export const TEAM: Recruiter[] = [
+  CURRENT_RECRUITER,
+  { id: "rec-sam", name: "Sam Patel", email: "sam@northwind.com", team: "Engineering Talent" },
+  { id: "rec-rae", name: "Rae Okonkwo", email: "rae@northwind.com", team: "GTM Talent" },
+  { id: "rec-mira", name: "Mira Solberg", email: "mira@northwind.com", team: "GTM Talent" },
+  { id: "rec-arun", name: "Arun Krishnan", email: "arun@northwind.com", team: "Engineering Talent" },
+];
+
+export const HIRING_MANAGERS = [
+  { id: "hm-priya", name: "Priya Raman", title: "VP Engineering" },
+  { id: "hm-marcus", name: "Marcus Webb", title: "Director, Data" },
+  { id: "hm-elena", name: "Elena Costa", title: "Head of Design" },
+  { id: "hm-david", name: "David Kim", title: "VP Sales" },
+];
+
+// ─── Roles ────────────────────────────────────────────────────────
+export const ROLES: Role[] = [
+  {
+    id: "role-1",
+    title: "Senior Backend Engineer",
+    team: "Platform",
+    hiringManager: "Priya Raman",
+    recruiter: "Jordan Chen",
+    location: "Remote · US",
+    openedAt: "2026-04-12",
+    targetCount: 2,
+    shortlisted: 24, consented: 17, screened: 9, advanced: 4, rejected: 5,
+    jdSummary: "Build the distributed services layer that ingests sensor telemetry from 40,000+ field devices.",
+    jdFull: `We're hiring a Senior Backend Engineer to lead the next phase of our telemetry ingestion platform. You'll own the design and operation of the services that handle high-throughput streams from our deployed climate sensors — from edge gateways through to our analytical data lake.
+
+Responsibilities
+• Design, build, and operate Go and Rust services running on Kubernetes
+• Lead architecture decisions for our event streaming layer (Kafka, NATS)
+• Mentor 2–3 mid-level engineers on the team
+• Collaborate with the data platform team on schema evolution
+
+Requirements
+• 6+ years building distributed systems in production
+• Strong Go or Rust; comfort with systems-level debugging
+• Experience with Kafka, NATS, or similar event-streaming platforms
+• Track record of leading technical decisions on a small team`,
+    screeningQuestions: [
+      { id: "q1", question: "Walk me through a distributed system you've designed end-to-end. What were the key trade-offs?", type: "open", required: true },
+      { id: "q2", question: "How do you approach observability in a high-throughput service?", type: "open", required: true },
+      { id: "q3", question: "Are you comfortable with on-call rotation (1 week in 6)?", type: "yes-no", required: true },
+      { id: "q4", question: "Compensation expectations — base salary range?", type: "open", required: true },
+      { id: "q5", question: "Earliest start date if we moved forward?", type: "open", required: false },
+    ],
+  },
+  {
+    id: "role-2",
+    title: "Staff Product Designer",
+    team: "Product",
+    hiringManager: "Elena Costa",
+    recruiter: "Jordan Chen",
+    location: "Hybrid · Brooklyn",
+    openedAt: "2026-04-22",
+    targetCount: 1,
+    shortlisted: 18, consented: 12, screened: 6, advanced: 2, rejected: 4,
+    jdSummary: "Lead end-to-end design of our field-operations product line for industrial customers.",
+    jdFull: `We're looking for a Staff Product Designer to take ownership of our field-operations product line — the tools our industrial customers use every day to deploy, monitor, and service climate sensor networks at scale.
+
+You will
+• Lead design end-to-end on a product line used by ~8,000 daily users
+• Partner directly with the GM and engineering lead
+• Mentor 2 mid-level designers
+• Set the design quality bar for the broader product org
+
+What we look for
+• 8+ years of product design, with 3+ at staff or principal level
+• Portfolio with deep, complex B2B or industrial work
+• Comfort working alongside engineers in low-fidelity early phases`,
+    screeningQuestions: [
+      { id: "q1", question: "Walk me through a project where you owned design end-to-end. What did you change about the original brief?", type: "open", required: true },
+      { id: "q2", question: "How do you partner with engineering when requirements are unclear?", type: "open", required: true },
+      { id: "q3", question: "What's your stance on design systems — when do you invest, when do you not?", type: "open", required: true },
+      { id: "q4", question: "Compensation expectations — base salary range?", type: "open", required: true },
+    ],
+  },
+  {
+    id: "role-3",
+    title: "Senior Data Scientist",
+    team: "Data",
+    hiringManager: "Marcus Webb",
+    recruiter: "Sam Patel",
+    location: "Remote · US/EU",
+    openedAt: "2026-04-05",
+    targetCount: 2,
+    shortlisted: 32, consented: 22, screened: 14, advanced: 6, rejected: 8,
+    jdSummary: "Build forecasting models that drive grid-scale energy decisions for our utility customers.",
+    jdFull: `Senior Data Scientist on our forecasting team. You'll build models that drive grid-scale dispatch decisions for utility customers managing renewable portfolios.`,
+    screeningQuestions: [
+      { id: "q1", question: "Describe a forecasting model you've shipped. What did you optimize for?", type: "open", required: true },
+      { id: "q2", question: "How do you handle distribution shift in production models?", type: "open", required: true },
+      { id: "q3", question: "Comfort working with PyTorch or JAX in production?", type: "yes-no", required: true },
+    ],
+  },
+  {
+    id: "role-4",
+    title: "Enterprise Account Executive",
+    team: "Sales",
+    hiringManager: "David Kim",
+    recruiter: "Rae Okonkwo",
+    location: "Remote · US",
+    openedAt: "2026-04-18",
+    targetCount: 3,
+    shortlisted: 41, consented: 28, screened: 18, advanced: 5, rejected: 12,
+    jdSummary: "Close $500k+ contracts with Fortune 1000 utilities, manufacturers, and infrastructure operators.",
+    jdFull: `Enterprise AE selling to utilities and infrastructure operators. Long sales cycles, six-figure ACVs.`,
+    screeningQuestions: [
+      { id: "q1", question: "Walk me through your largest closed deal in the last 12 months.", type: "open", required: true },
+      { id: "q2", question: "What's your average sales cycle length?", type: "open", required: true },
+      { id: "q3", question: "Quota attainment for the past 2 years?", type: "open", required: true },
+    ],
+  },
+  {
+    id: "role-5",
+    title: "Site Reliability Engineer",
+    team: "Platform",
+    hiringManager: "Priya Raman",
+    recruiter: "Arun Krishnan",
+    location: "Remote · Global",
+    openedAt: "2026-04-25",
+    targetCount: 1,
+    shortlisted: 15, consented: 9, screened: 3, advanced: 1, rejected: 2,
+    jdSummary: "Own production reliability for our multi-region Kubernetes platform.",
+    jdFull: "SRE owning production reliability across 4 regions, 60+ services on Kubernetes.",
+    screeningQuestions: [
+      { id: "q1", question: "Describe an incident you led the response on.", type: "open", required: true },
+      { id: "q2", question: "Comfort with PromQL, Grafana dashboards, and SLO definition?", type: "yes-no", required: true },
+    ],
+  },
+  {
+    id: "role-6",
+    title: "Engineering Manager, Mobile",
+    team: "Product",
+    hiringManager: "Priya Raman",
+    recruiter: "Jordan Chen",
+    location: "Hybrid · Brooklyn",
+    openedAt: "2026-04-28",
+    targetCount: 1,
+    shortlisted: 12, consented: 7, screened: 2, advanced: 0, rejected: 3,
+    jdSummary: "Lead our 6-person mobile team building field-tech apps used by 8,000+ technicians daily.",
+    jdFull: "EM for the mobile platform team. Native iOS and Android, React Native bridge.",
+    screeningQuestions: [
+      { id: "q1", question: "How do you grow ICs into senior engineers?", type: "open", required: true },
+      { id: "q2", question: "How do you balance shipping vs platform investment?", type: "open", required: true },
+    ],
+  },
+];
+
+// ─── Candidate generator ──────────────────────────────────────────
+const FIRST_NAMES = ["Aisha", "Marcus", "Priya", "Diego", "Yuki", "Elena", "Tariq", "Maya", "Owen", "Zara", "Liam", "Naomi", "Felix", "Ravi", "Lena", "Theo", "Iris", "Caleb", "Anya", "Jonas", "Sofia", "Khalil", "Mira", "Sebastian", "Nadia", "Quinn", "Ines", "Rohan", "Esme", "Dmitri"];
+const LAST_NAMES = ["Okafor", "Reyes", "Sundaram", "Mendoza", "Tanaka", "Rivera", "Hassan", "Park", "Walsh", "Petrov", "Murphy", "Ito", "Shah", "Lindqvist", "Kowalski", "Banerjee", "Cohen", "Volkov", "Morales", "Nguyen", "Andersen", "Adebayo", "Vasquez", "Müller", "Romano", "Singh"];
+const COMPANIES = ["Stripe", "Datadog", "Cloudflare", "Notion", "Figma", "Vercel", "Linear", "Anthropic", "Plaid", "Snowflake", "Mozilla", "GitHub", "MongoDB", "Twilio", "HashiCorp", "Confluent"];
+const LOCATIONS = ["San Francisco, CA", "New York, NY", "Brooklyn, NY", "Austin, TX", "Seattle, WA", "Boston, MA", "Berlin, DE", "Toronto, ON", "London, UK", "Amsterdam, NL", "Remote · US", "Remote · EU"];
+
+function rand<T>(arr: T[]): T { return arr[Math.floor(Math.random() * arr.length)]; }
+function pick<T>(arr: T[], n: number): T[] {
+  const c = [...arr]; const out: T[] = [];
+  for (let i = 0; i < n && c.length; i++) out.push(c.splice(Math.floor(Math.random() * c.length), 1)[0]);
+  return out;
+}
+
+const SKILLS_BY_TEAM: Record<string, string[]> = {
+  Platform: ["Go", "Rust", "Kubernetes", "Kafka", "NATS", "Postgres", "gRPC", "Terraform", "AWS", "GCP", "Distributed systems", "Observability"],
+  Product: ["Figma", "Design systems", "User research", "Prototyping", "B2B SaaS", "Industrial UX", "Cross-functional leadership", "Mentorship"],
+  Data: ["PyTorch", "JAX", "Time-series forecasting", "Causal inference", "MLOps", "Spark", "dbt", "Snowflake", "Bayesian methods"],
+  Sales: ["Enterprise sales", "MEDDPICC", "Outbound", "Channel partnerships", "Six-figure ACV", "Multi-stakeholder selling"],
+};
+
+function dateAgo(days: number): string {
+  const d = new Date();
+  d.setDate(d.getDate() - days);
+  d.setHours(d.getHours() - Math.floor(Math.random() * 12));
+  return d.toISOString();
+}
+
+function dateAhead(hours: number): string {
+  const d = new Date();
+  d.setHours(d.getHours() + hours + Math.floor(Math.random() * 24));
+  return d.toISOString();
+}
+
+let candidateIdCounter = 1000;
+
+function generateCandidate(role: Role, stageHint?: Candidate["stage"]): Candidate {
+  const first = rand(FIRST_NAMES);
+  const last = rand(LAST_NAMES);
+  const id = `cand-${++candidateIdCounter}`;
+  const skills = pick(SKILLS_BY_TEAM[role.team] || SKILLS_BY_TEAM.Platform, 5 + Math.floor(Math.random() * 3));
+  const yearsExp = role.title.includes("Staff") || role.title.includes("Senior") || role.title.includes("Manager")
+    ? 6 + Math.floor(Math.random() * 8)
+    : 3 + Math.floor(Math.random() * 5);
+
+  const stages: Candidate["stage"][] = ["shortlisted", "consented", "screened", "advanced", "rejected"];
+  const stage = stageHint ?? rand(stages);
+
+  let consentStatus: Candidate["consentStatus"] = "pending";
+  let lastDisposition: Candidate["lastDisposition"] = null;
+
+  if (stage === "shortlisted") consentStatus = rand(["pending", "pending", "expired"] as const);
+  else if (stage === "consented") consentStatus = "accepted";
+  else if (stage === "screened") { consentStatus = "accepted"; lastDisposition = "on-hold"; }
+  else if (stage === "advanced") { consentStatus = "accepted"; lastDisposition = "shortlisted"; }
+  else if (stage === "rejected") { consentStatus = rand(["accepted", "declined"] as const); lastDisposition = "rejected"; }
+
+  const shortlistedDay = Math.floor(Math.random() * 14) + 1;
+
+  return {
+    id,
+    name: `${first} ${last}`,
+    email: `${first.toLowerCase()}.${last.toLowerCase()}@${rand(["gmail.com", "outlook.com", "hey.com", "fastmail.com", "proton.me"])}`,
+    phone: `+1 ${200 + Math.floor(Math.random() * 800)} ${100 + Math.floor(Math.random() * 900)} ${1000 + Math.floor(Math.random() * 9000)}`,
+    currentRole: role.title.replace("Senior ", "").replace("Staff ", "").replace("Lead ", ""),
+    currentCompany: rand(COMPANIES),
+    location: rand(LOCATIONS),
+    source: rand(["Workday", "Greenhouse", "Lever", "iCIMS"] as const),
+    shortlistedAt: dateAgo(shortlistedDay),
+    consentStatus,
+    consentSentAt: dateAgo(shortlistedDay - 0.1),
+    consentRespondedAt: consentStatus === "accepted" || consentStatus === "declined" ? dateAgo(shortlistedDay - 1) : undefined,
+    yearsExperience: yearsExp,
+    skills,
+    resumeSummary: `${yearsExp}-year ${role.team.toLowerCase()} ${role.title.includes("Manager") ? "leader" : "engineer"} most recently at ${COMPANIES[Math.floor(Math.random() * COMPANIES.length)]}, with deep experience in ${skills.slice(0, 2).join(" and ")}.`,
+    resumeBullets: [
+      `Led ${role.team === "Platform" ? "platform reliability" : role.team === "Data" ? "forecasting infra" : role.team === "Product" ? "product design" : "enterprise expansion"} for a ${rand(["50", "200", "400", "1000"])}-person company.`,
+      `Owned ${rand(["a 4-person team", "a 6-person team", "individual contributor track"])} for ${2 + Math.floor(Math.random() * 4)} years.`,
+      `Specialised in ${skills.slice(0, 3).join(", ")}.`,
+      `Prior experience: ${pick(COMPANIES, 2).join(", ")}.`,
+    ],
+    lastDisposition,
+    lastCallAt: stage === "screened" || stage === "advanced" || stage === "rejected" ? dateAgo(Math.floor(Math.random() * 5)) : undefined,
+    callbackAt: consentStatus === "accepted" && stage === "consented" && Math.random() < 0.3 ? dateAhead(Math.floor(Math.random() * 48) - 24) : undefined,
+    roleId: role.id,
+    stage,
+    aiSummary: stage === "screened" || stage === "advanced"
+      ? `Strong fundamentals in ${skills[0]} and ${skills[1]}. Communicates clearly, asked thoughtful questions about team structure and on-call expectations. Comp expectation: $${180 + Math.floor(Math.random() * 80)}k base. Earliest start: ${rand(["2 weeks", "4 weeks", "6 weeks"])}. ${rand(["Recommend advance to onsite.", "Recommend technical screen.", "Strong yes — move forward.", "Borderline — would benefit from a second screen."])}`
+      : undefined,
+  };
+}
+
+// Generate candidate pool deterministically distributed across stages
+export const CANDIDATES: Candidate[] = ROLES.flatMap(role => {
+  const out: Candidate[] = [];
+  for (let i = 0; i < role.shortlisted - role.consented; i++) out.push(generateCandidate(role, "shortlisted"));
+  for (let i = 0; i < role.consented - role.screened; i++) out.push(generateCandidate(role, "consented"));
+  for (let i = 0; i < role.screened - role.advanced - role.rejected; i++) out.push(generateCandidate(role, "screened"));
+  for (let i = 0; i < role.advanced; i++) out.push(generateCandidate(role, "advanced"));
+  for (let i = 0; i < role.rejected; i++) out.push(generateCandidate(role, "rejected"));
+  return out;
+});
+
+// ─── Today's metrics ──────────────────────────────────────────────
+export const TODAY_METRICS = {
+  callsMade: 31,
+  candidatesReached: 18,
+  screeningsCompleted: 12,
+  shortlisted: 5,
+  rejected: 4,
+  voicemailDropped: 9,
+  avgCallDurationSec: 487,
+  connectRate: 0.58,
+};
+
+export const WEEK_TREND = [
+  { day: "Mon", calls: 28, screened: 11 },
+  { day: "Tue", calls: 35, screened: 14 },
+  { day: "Wed", calls: 42, screened: 17 },
+  { day: "Thu", calls: 31, screened: 12 },
+  { day: "Fri", calls: 38, screened: 15 },
+  { day: "Sat", calls: 8, screened: 3 },
+  { day: "Sun", calls: 0, screened: 0 },
+];
+
+// Best time to call heatmap — hours × days, value = connect rate (0..1)
+export const HEATMAP_DATA: number[][] = (() => {
+  const days = 7, hours = 12; // 8am to 7pm
+  const out: number[][] = [];
+  for (let d = 0; d < days; d++) {
+    const row: number[] = [];
+    for (let h = 0; h < hours; h++) {
+      // Higher rates Tue-Thu mid-morning and early afternoon
+      const isWeekday = d >= 1 && d <= 4;
+      const isPrime = h >= 1 && h <= 3 || h >= 5 && h <= 7;
+      const base = isWeekday && isPrime ? 0.55 : isWeekday ? 0.32 : d === 5 ? 0.18 : 0.05;
+      row.push(Math.max(0, Math.min(1, base + (Math.random() - 0.5) * 0.2)));
+    }
+    out.push(row);
+  }
+  return out;
+})();
+
+// ─── Today's action plan ──────────────────────────────────────────
+export const TODAY_ACTIONS = [
+  { id: "act-1", type: "callback" as const, candidateName: "Aisha Okafor", roleTitle: "Senior Backend Engineer", at: "10:30 AM", urgency: "high" as const },
+  { id: "act-2", type: "call" as const, candidateName: "Marcus Reyes", roleTitle: "Staff Product Designer", at: "11:00 AM", urgency: "medium" as const },
+  { id: "act-3", type: "consent-followup" as const, candidateName: "5 candidates", roleTitle: "Senior Backend Engineer", at: "Pending 48h+", urgency: "medium" as const },
+  { id: "act-4", type: "call" as const, candidateName: "Diego Mendoza", roleTitle: "Engineering Manager, Mobile", at: "2:00 PM", urgency: "low" as const },
+  { id: "act-5", type: "callback" as const, candidateName: "Yuki Tanaka", roleTitle: "Senior Backend Engineer", at: "3:30 PM", urgency: "medium" as const },
+];
+
+// ─── Recent activity feed ─────────────────────────────────────────
+export const RECENT_ACTIVITY = [
+  { id: "act-1", type: "screening-complete", text: "Screened Priya Sundaram for Staff Product Designer", at: "12 minutes ago", outcome: "shortlisted" as const },
+  { id: "act-2", type: "consent-accepted", text: "Owen Walsh accepted consent for Senior Backend Engineer", at: "34 minutes ago" },
+  { id: "act-3", type: "voicemail", text: "Voicemail dropped for Tariq Hassan", at: "1 hour ago" },
+  { id: "act-4", type: "screening-complete", text: "Screened Felix Lindqvist for Senior Backend Engineer", at: "2 hours ago", outcome: "rejected" as const },
+  { id: "act-5", type: "callback-scheduled", text: "Callback scheduled with Naomi Petrov tomorrow at 11am", at: "2 hours ago" },
+  { id: "act-6", type: "bulk-sent", text: "Sent SMS reminder to 8 non-responding candidates", at: "3 hours ago" },
+];
+
+// ─── Goals ────────────────────────────────────────────────────────
+export const GOALS = {
+  daily: { target: 35, actual: 31 },
+  weekly: { target: 175, actual: 134 },
+  monthly: { target: 700, actual: 542 },
+};
+<<< END FILE
+
+==============================================================================
+>>> FILE: src/components/ui/button.tsx
+==============================================================================
+import * as React from "react";
+import { Slot } from "@radix-ui/react-slot";
+import { cva, type VariantProps } from "class-variance-authority";
+import { cn } from "@/lib/utils";
+
+const buttonVariants = cva(
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md font-semibold transition-all focus-visible:outline-none focus-visible:shadow-focus disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98]",
+  {
+    variants: {
+      variant: {
+        // Primary CTA — Stellar Blue
+        default: "bg-stellar text-white hover:bg-stellar-700",
+        // Secondary outline
+        outline: "bg-white border border-border-strong text-dark hover:bg-mist hover:border-stellar/50",
+        // Ghost
+        ghost: "text-dark hover:bg-mist",
+        // Subtle (mist background)
+        subtle: "bg-mist text-cosmic hover:bg-stellar-50",
+        // Destructive — semantic red, never brand red
+        destructive: "bg-danger text-white hover:bg-danger-ink",
+        // Brand — Cosmic Indigo (for hero CTAs only)
+        brand: "bg-cosmic text-white hover:bg-cosmic/90",
+        // Link
+        link: "text-stellar hover:underline underline-offset-4",
+        // Success
+        success: "bg-success text-success-ink hover:bg-success/80",
+      },
+      size: {
+        default: "h-9 px-4 text-[14px]",
+        sm: "h-8 px-3 text-[13px] rounded-md",
+        lg: "h-10 px-5 text-[14px]",
+        xl: "h-12 px-6 text-[15px]",
+        icon: "h-9 w-9",
+        "icon-sm": "h-8 w-8",
+      },
+    },
+    defaultVariants: { variant: "default", size: "default" },
+  }
+);
+
+export interface ButtonProps
+  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
+    VariantProps<typeof buttonVariants> {
+  asChild?: boolean;
+}
+
+export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
+  ({ className, variant, size, asChild = false, ...props }, ref) => {
+    const Comp = asChild ? Slot : "button";
+    return <Comp className={cn(buttonVariants({ variant, size, className }))} ref={ref} {...props} />;
+  }
+);
+Button.displayName = "Button";
+
+export { buttonVariants };
+<<< END FILE
+
+==============================================================================
+>>> FILE: src/components/ui/card.tsx
+==============================================================================
+import * as React from "react";
+import { cn } from "@/lib/utils";
+
+export const Card = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
+  ({ className, ...props }, ref) => (
+    <div
+      ref={ref}
+      className={cn(
+        "bg-white rounded-lg border border-border shadow-1 transition-shadow hover:shadow-2",
+        className
+      )}
+      {...props}
+    />
+  )
+);
+Card.displayName = "Card";
+
+export const CardHeader = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
+  ({ className, ...props }, ref) => (
+    <div ref={ref} className={cn("flex flex-col gap-1 p-5 pb-3", className)} {...props} />
+  )
+);
+CardHeader.displayName = "CardHeader";
+
+export const CardTitle = React.forwardRef<HTMLHeadingElement, React.HTMLAttributes<HTMLHeadingElement>>(
+  ({ className, ...props }, ref) => (
+    <h3 ref={ref} className={cn("t-title-medium text-cosmic", className)} {...props} />
+  )
+);
+CardTitle.displayName = "CardTitle";
+
+export const CardDescription = React.forwardRef<HTMLParagraphElement, React.HTMLAttributes<HTMLParagraphElement>>(
+  ({ className, ...props }, ref) => (
+    <p ref={ref} className={cn("t-body-small text-muted-fg", className)} {...props} />
+  )
+);
+CardDescription.displayName = "CardDescription";
+
+export const CardContent = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
+  ({ className, ...props }, ref) => (
+    <div ref={ref} className={cn("px-5 pb-5", className)} {...props} />
+  )
+);
+CardContent.displayName = "CardContent";
+
+export const CardFooter = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
+  ({ className, ...props }, ref) => (
+    <div ref={ref} className={cn("flex items-center px-5 pb-5 pt-0", className)} {...props} />
+  )
+);
+CardFooter.displayName = "CardFooter";
+<<< END FILE
+
+==============================================================================
+>>> FILE: src/components/ui/input.tsx
+==============================================================================
+import * as React from "react";
+import { cn } from "@/lib/utils";
+
+export const Input = React.forwardRef<HTMLInputElement, React.InputHTMLAttributes<HTMLInputElement>>(
+  ({ className, type, ...props }, ref) => (
+    <input
+      type={type}
+      ref={ref}
+      className={cn(
+        "flex h-9 w-full rounded-lg border border-border-strong bg-white px-3 py-1 text-[14px] text-dark transition-colors",
+        "placeholder:text-muted",
+        "focus-visible:outline-none focus-visible:border-stellar focus-visible:border-2 focus-visible:px-[11px]",
+        "disabled:cursor-not-allowed disabled:opacity-50",
+        className
+      )}
+      {...props}
+    />
+  )
+);
+Input.displayName = "Input";
+<<< END FILE
+
+==============================================================================
+>>> FILE: src/components/ui/label.tsx
+==============================================================================
+import * as React from "react";
+import * as LabelPrimitive from "@radix-ui/react-label";
+import { cn } from "@/lib/utils";
+
+export const Label = React.forwardRef<
+  React.ElementRef<typeof LabelPrimitive.Root>,
+  React.ComponentPropsWithoutRef<typeof LabelPrimitive.Root>
+>(({ className, ...props }, ref) => (
+  <LabelPrimitive.Root
+    ref={ref}
+    className={cn("t-label-large text-dark peer-disabled:opacity-70", className)}
+    {...props}
+  />
+));
+Label.displayName = LabelPrimitive.Root.displayName;
+<<< END FILE
+
+==============================================================================
+>>> FILE: src/components/ui/badge.tsx
+==============================================================================
+import * as React from "react";
+import { cva, type VariantProps } from "class-variance-authority";
+import { cn } from "@/lib/utils";
+
+const badgeVariants = cva(
+  "inline-flex items-center gap-1 rounded-pill px-2 py-0.5 t-label-small whitespace-nowrap",
+  {
+    variants: {
+      variant: {
+        default: "bg-mist text-cosmic",
+        success: "bg-success-soft text-success-ink",
+        warning: "bg-warning-soft text-warning-ink",
+        danger: "bg-danger-soft text-danger-ink",
+        info: "bg-stellar-50 text-stellar-700",
+        neutral: "bg-mist text-dark",
+        outline: "bg-white border border-border text-dark",
+        cosmic: "bg-cosmic text-white",
+        flare: "bg-flare text-cosmic", // Solar Flare: bg only — never text on white
+      },
+      size: {
+        default: "px-2 py-0.5",
+        sm: "px-1.5 py-0 text-[9px]",
+        lg: "px-2.5 py-1 text-[11px]",
+      },
+    },
+    defaultVariants: { variant: "default", size: "default" },
+  }
+);
+
+export interface BadgeProps
+  extends React.HTMLAttributes<HTMLDivElement>,
+    VariantProps<typeof badgeVariants> {}
+
+export function Badge({ className, variant, size, ...props }: BadgeProps) {
+  return <div className={cn(badgeVariants({ variant, size }), className)} {...props} />;
+}
+<<< END FILE
+
+==============================================================================
+>>> FILE: src/components/ui/avatar.tsx
+==============================================================================
+import * as React from "react";
+import * as AvatarPrimitive from "@radix-ui/react-avatar";
+import { cn, initials } from "@/lib/utils";
+
+export const Avatar = React.forwardRef<
+  React.ElementRef<typeof AvatarPrimitive.Root>,
+  React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Root>
+>(({ className, ...props }, ref) => (
+  <AvatarPrimitive.Root
+    ref={ref}
+    className={cn("relative flex h-9 w-9 shrink-0 overflow-hidden rounded-pill", className)}
+    {...props}
+  />
+));
+Avatar.displayName = "Avatar";
+
+export const AvatarImage = React.forwardRef<
+  React.ElementRef<typeof AvatarPrimitive.Image>,
+  React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Image>
+>(({ className, ...props }, ref) => (
+  <AvatarPrimitive.Image ref={ref} className={cn("aspect-square h-full w-full", className)} {...props} />
+));
+AvatarImage.displayName = "AvatarImage";
+
+export const AvatarFallback = React.forwardRef<
+  React.ElementRef<typeof AvatarPrimitive.Fallback>,
+  React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Fallback>
+>(({ className, ...props }, ref) => (
+  <AvatarPrimitive.Fallback
+    ref={ref}
+    className={cn(
+      "flex h-full w-full items-center justify-center leo-avatar-gradient text-white font-semibold text-[12px]",
+      className
+    )}
+    {...props}
+  />
+));
+AvatarFallback.displayName = "AvatarFallback";
+
+// Convenience wrapper
+export function NameAvatar({ name, size = 36, className }: { name: string; size?: number; className?: string }) {
+  return (
+    <Avatar style={{ width: size, height: size }} className={className}>
+      <AvatarFallback style={{ fontSize: size * 0.36 }}>{initials(name)}</AvatarFallback>
+    </Avatar>
+  );
+}
+<<< END FILE
+
+==============================================================================
+>>> FILE: src/components/ui/tabs.tsx
+==============================================================================
+import * as React from "react";
+import * as TabsPrimitive from "@radix-ui/react-tabs";
+import { cn } from "@/lib/utils";
+
+export const Tabs = TabsPrimitive.Root;
+
+export const TabsList = React.forwardRef<
+  React.ElementRef<typeof TabsPrimitive.List>,
+  React.ComponentPropsWithoutRef<typeof TabsPrimitive.List>
+>(({ className, ...props }, ref) => (
+  <TabsPrimitive.List
+    ref={ref}
+    className={cn(
+      "inline-flex h-9 items-center gap-1 rounded-lg bg-mist p-1 text-dark",
+      className
+    )}
+    {...props}
+  />
+));
+TabsList.displayName = "TabsList";
+
+export const TabsTrigger = React.forwardRef<
+  React.ElementRef<typeof TabsPrimitive.Trigger>,
+  React.ComponentPropsWithoutRef<typeof TabsPrimitive.Trigger>
+>(({ className, ...props }, ref) => (
+  <TabsPrimitive.Trigger
+    ref={ref}
+    className={cn(
+      "inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1 t-label-large transition-all",
+      "focus-visible:outline-none focus-visible:shadow-focus",
+      "disabled:pointer-events-none disabled:opacity-50",
+      "data-[state=active]:bg-white data-[state=active]:text-cosmic data-[state=active]:shadow-1",
+      "data-[state=inactive]:text-muted-fg hover:text-dark",
+      className
+    )}
+    {...props}
+  />
+));
+TabsTrigger.displayName = "TabsTrigger";
+
+export const TabsContent = React.forwardRef<
+  React.ElementRef<typeof TabsPrimitive.Content>,
+  React.ComponentPropsWithoutRef<typeof TabsPrimitive.Content>
+>(({ className, ...props }, ref) => (
+  <TabsPrimitive.Content
+    ref={ref}
+    className={cn("mt-4 focus-visible:outline-none", className)}
+    {...props}
+  />
+));
+TabsContent.displayName = "TabsContent";
+<<< END FILE
+
+==============================================================================
+>>> FILE: src/components/ui/dialog.tsx
+==============================================================================
+import * as React from "react";
+import * as DialogPrimitive from "@radix-ui/react-dialog";
+import { X } from "lucide-react";
+import { cn } from "@/lib/utils";
+
+export const Dialog = DialogPrimitive.Root;
+export const DialogTrigger = DialogPrimitive.Trigger;
+export const DialogPortal = DialogPrimitive.Portal;
+export const DialogClose = DialogPrimitive.Close;
+
+export const DialogOverlay = React.forwardRef<
+  React.ElementRef<typeof DialogPrimitive.Overlay>,
+  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Overlay>
+>(({ className, ...props }, ref) => (
+  <DialogPrimitive.Overlay
+    ref={ref}
+    className={cn(
+      "fixed inset-0 z-50 bg-cosmic/30 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
+      className
+    )}
+    {...props}
+  />
+));
+DialogOverlay.displayName = "DialogOverlay";
+
+export const DialogContent = React.forwardRef<
+  React.ElementRef<typeof DialogPrimitive.Content>,
+  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
+>(({ className, children, ...props }, ref) => (
+  <DialogPortal>
+    <DialogOverlay />
+    <DialogPrimitive.Content
+      ref={ref}
+      className={cn(
+        "fixed left-[50%] top-[50%] z-50 grid w-full max-w-[520px] translate-x-[-50%] translate-y-[-50%] gap-4 bg-white p-6 rounded-xl border border-border shadow-3 duration-200",
+        "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
+        className
+      )}
+      {...props}
+    >
+      {children}
+      <DialogPrimitive.Close className="absolute right-4 top-4 rounded-md p-1 text-muted-fg transition-colors hover:bg-mist hover:text-dark focus-visible:outline-none focus-visible:shadow-focus">
+        <X className="h-4 w-4" />
+      </DialogPrimitive.Close>
+    </DialogPrimitive.Content>
+  </DialogPortal>
+));
+DialogContent.displayName = "DialogContent";
+
+export const DialogHeader = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
+  <div className={cn("flex flex-col gap-1.5 text-left", className)} {...props} />
+);
+
+export const DialogFooter = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
+  <div className={cn("flex flex-col-reverse sm:flex-row sm:justify-end gap-2", className)} {...props} />
+);
+
+export const DialogTitle = React.forwardRef<
+  React.ElementRef<typeof DialogPrimitive.Title>,
+  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Title>
+>(({ className, ...props }, ref) => (
+  <DialogPrimitive.Title
+    ref={ref}
+    className={cn("t-headline-small text-cosmic", className)}
+    {...props}
+  />
+));
+DialogTitle.displayName = "DialogTitle";
+
+export const DialogDescription = React.forwardRef<
+  React.ElementRef<typeof DialogPrimitive.Description>,
+  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Description>
+>(({ className, ...props }, ref) => (
+  <DialogPrimitive.Description
+    ref={ref}
+    className={cn("t-body-medium text-muted-fg", className)}
+    {...props}
+  />
+));
+DialogDescription.displayName = "DialogDescription";
+<<< END FILE
+
+==============================================================================
+>>> FILE: src/components/ui/sheet.tsx
+==============================================================================
+import * as React from "react";
+import * as DialogPrimitive from "@radix-ui/react-dialog";
+import { cva, type VariantProps } from "class-variance-authority";
+import { X } from "lucide-react";
+import { cn } from "@/lib/utils";
+
+export const Sheet = DialogPrimitive.Root;
+export const SheetTrigger = DialogPrimitive.Trigger;
+export const SheetClose = DialogPrimitive.Close;
+export const SheetPortal = DialogPrimitive.Portal;
+
+const SheetOverlay = React.forwardRef<
+  React.ElementRef<typeof DialogPrimitive.Overlay>,
+  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Overlay>
+>(({ className, ...props }, ref) => (
+  <DialogPrimitive.Overlay
+    className={cn(
+      "fixed inset-0 z-50 bg-cosmic/30 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
+      className
+    )}
+    {...props}
+    ref={ref}
+  />
+));
+SheetOverlay.displayName = "SheetOverlay";
+
+const sheetVariants = cva(
+  "fixed z-50 gap-4 bg-white shadow-3 transition ease-out data-[state=closed]:duration-200 data-[state=open]:duration-200",
+  {
+    variants: {
+      side: {
+        top: "inset-x-0 top-0 border-b border-border data-[state=closed]:slide-out-to-top data-[state=open]:slide-in-from-top",
+        bottom: "inset-x-0 bottom-0 border-t border-border data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom",
+        left: "inset-y-0 left-0 h-full w-3/4 border-r border-border data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left sm:max-w-sm",
+        right: "inset-y-0 right-0 h-full w-full max-w-md border-l border-border data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right",
+      },
+    },
+    defaultVariants: { side: "right" },
+  }
+);
+
+interface SheetContentProps
+  extends React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>,
+    VariantProps<typeof sheetVariants> {}
+
+export const SheetContent = React.forwardRef<
+  React.ElementRef<typeof DialogPrimitive.Content>,
+  SheetContentProps
+>(({ side = "right", className, children, ...props }, ref) => (
+  <SheetPortal>
+    <SheetOverlay />
+    <DialogPrimitive.Content ref={ref} className={cn(sheetVariants({ side }), className)} {...props}>
+      <DialogPrimitive.Close className="absolute right-4 top-4 rounded-md p-1 text-muted-fg transition-colors hover:bg-mist hover:text-dark focus-visible:outline-none focus-visible:shadow-focus">
+        <X className="h-4 w-4" />
+      </DialogPrimitive.Close>
+      {children}
+    </DialogPrimitive.Content>
+  </SheetPortal>
+));
+SheetContent.displayName = "SheetContent";
+
+export const SheetHeader = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
+  <div className={cn("flex flex-col gap-1 p-6 pb-4 border-b border-border", className)} {...props} />
+);
+
+export const SheetFooter = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
+  <div className={cn("flex flex-col-reverse sm:flex-row sm:justify-end gap-2 p-6 pt-4 border-t border-border", className)} {...props} />
+);
+
+export const SheetTitle = React.forwardRef<
+  React.ElementRef<typeof DialogPrimitive.Title>,
+  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Title>
+>(({ className, ...props }, ref) => (
+  <DialogPrimitive.Title ref={ref} className={cn("t-title-large text-cosmic", className)} {...props} />
+));
+SheetTitle.displayName = "SheetTitle";
+
+export const SheetDescription = React.forwardRef<
+  React.ElementRef<typeof DialogPrimitive.Description>,
+  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Description>
+>(({ className, ...props }, ref) => (
+  <DialogPrimitive.Description ref={ref} className={cn("t-body-medium text-muted-fg", className)} {...props} />
+));
+SheetDescription.displayName = "SheetDescription";
+<<< END FILE
+
+==============================================================================
+>>> FILE: src/components/ui/dropdown-menu.tsx
+==============================================================================
+import * as React from "react";
+import * as DropdownMenuPrimitive from "@radix-ui/react-dropdown-menu";
+import { Check, ChevronRight, Circle } from "lucide-react";
+import { cn } from "@/lib/utils";
+
+export const DropdownMenu = DropdownMenuPrimitive.Root;
+export const DropdownMenuTrigger = DropdownMenuPrimitive.Trigger;
+export const DropdownMenuGroup = DropdownMenuPrimitive.Group;
+export const DropdownMenuPortal = DropdownMenuPrimitive.Portal;
+export const DropdownMenuSub = DropdownMenuPrimitive.Sub;
+export const DropdownMenuRadioGroup = DropdownMenuPrimitive.RadioGroup;
+
+export const DropdownMenuContent = React.forwardRef<
+  React.ElementRef<typeof DropdownMenuPrimitive.Content>,
+  React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Content>
+>(({ className, sideOffset = 6, ...props }, ref) => (
+  <DropdownMenuPrimitive.Portal>
+    <DropdownMenuPrimitive.Content
+      ref={ref}
+      sideOffset={sideOffset}
+      className={cn(
+        "z-50 min-w-[200px] overflow-hidden rounded-lg border border-border bg-white p-1 shadow-2",
+        "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
+        className
+      )}
+      {...props}
+    />
+  </DropdownMenuPrimitive.Portal>
+));
+DropdownMenuContent.displayName = "DropdownMenuContent";
+
+export const DropdownMenuItem = React.forwardRef<
+  React.ElementRef<typeof DropdownMenuPrimitive.Item>,
+  React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Item> & { inset?: boolean }
+>(({ className, inset, ...props }, ref) => (
+  <DropdownMenuPrimitive.Item
+    ref={ref}
+    className={cn(
+      "relative flex cursor-default select-none items-center gap-2 rounded-md px-2 py-1.5 text-[14px] text-dark outline-none transition-colors",
+      "focus:bg-mist focus:text-cosmic",
+      "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+      inset && "pl-8",
+      className
+    )}
+    {...props}
+  />
+));
+DropdownMenuItem.displayName = "DropdownMenuItem";
+
+export const DropdownMenuLabel = React.forwardRef<
+  React.ElementRef<typeof DropdownMenuPrimitive.Label>,
+  React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Label> & { inset?: boolean }
+>(({ className, inset, ...props }, ref) => (
+  <DropdownMenuPrimitive.Label
+    ref={ref}
+    className={cn("px-2 py-1.5 t-label-small text-muted-fg", inset && "pl-8", className)}
+    {...props}
+  />
+));
+DropdownMenuLabel.displayName = "DropdownMenuLabel";
+
+export const DropdownMenuSeparator = React.forwardRef<
+  React.ElementRef<typeof DropdownMenuPrimitive.Separator>,
+  React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Separator>
+>(({ className, ...props }, ref) => (
+  <DropdownMenuPrimitive.Separator ref={ref} className={cn("-mx-1 my-1 h-px bg-border", className)} {...props} />
+));
+DropdownMenuSeparator.displayName = "DropdownMenuSeparator";
+
+export const DropdownMenuShortcut = ({ className, ...props }: React.HTMLAttributes<HTMLSpanElement>) => (
+  <span className={cn("ml-auto t-label-small text-muted", className)} {...props} />
+);
+<<< END FILE
+
+==============================================================================
+>>> FILE: src/components/ui/command.tsx
+==============================================================================
+import * as React from "react";
+import { Command as CommandPrimitive } from "cmdk";
+import { Search } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Dialog, DialogContent } from "./dialog";
+
+export const Command = React.forwardRef<
+  React.ElementRef<typeof CommandPrimitive>,
+  React.ComponentPropsWithoutRef<typeof CommandPrimitive>
+>(({ className, ...props }, ref) => (
+  <CommandPrimitive
+    ref={ref}
+    className={cn("flex h-full w-full flex-col overflow-hidden rounded-xl bg-white text-dark", className)}
+    {...props}
+  />
+));
+Command.displayName = "Command";
+
+interface CommandDialogProps extends React.ComponentProps<typeof Dialog> {}
+
+export const CommandDialog = ({ children, ...props }: CommandDialogProps) => (
+  <Dialog {...props}>
+    <DialogContent className="overflow-hidden p-0 max-w-[640px]">
+      <Command className="[&_[cmdk-group-heading]]:px-3 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:t-label-small [&_[cmdk-group-heading]]:text-muted-fg [&_[cmdk-input-wrapper]_svg]:h-5 [&_[cmdk-input-wrapper]_svg]:w-5 [&_[cmdk-input]]:h-12 [&_[cmdk-item]]:px-3 [&_[cmdk-item]]:py-2.5">
+        {children}
+      </Command>
+    </DialogContent>
+  </Dialog>
+);
+
+export const CommandInput = React.forwardRef<
+  React.ElementRef<typeof CommandPrimitive.Input>,
+  React.ComponentPropsWithoutRef<typeof CommandPrimitive.Input>
+>(({ className, ...props }, ref) => (
+  <div className="flex items-center border-b border-border px-3 gap-2" cmdk-input-wrapper="">
+    <Search className="h-4 w-4 shrink-0 text-muted" />
+    <CommandPrimitive.Input
+      ref={ref}
+      className={cn(
+        "flex h-11 w-full rounded-md bg-transparent py-3 text-[14px] text-dark outline-none placeholder:text-muted disabled:cursor-not-allowed disabled:opacity-50",
+        className
+      )}
+      {...props}
+    />
+  </div>
+));
+CommandInput.displayName = "CommandInput";
+
+export const CommandList = React.forwardRef<
+  React.ElementRef<typeof CommandPrimitive.List>,
+  React.ComponentPropsWithoutRef<typeof CommandPrimitive.List>
+>(({ className, ...props }, ref) => (
+  <CommandPrimitive.List
+    ref={ref}
+    className={cn("max-h-[400px] overflow-y-auto overflow-x-hidden p-2", className)}
+    {...props}
+  />
+));
+CommandList.displayName = "CommandList";
+
+export const CommandEmpty = React.forwardRef<
+  React.ElementRef<typeof CommandPrimitive.Empty>,
+  React.ComponentPropsWithoutRef<typeof CommandPrimitive.Empty>
+>((props, ref) => (
+  <CommandPrimitive.Empty ref={ref} className="py-6 text-center t-body-small text-muted-fg" {...props} />
+));
+CommandEmpty.displayName = "CommandEmpty";
+
+export const CommandGroup = React.forwardRef<
+  React.ElementRef<typeof CommandPrimitive.Group>,
+  React.ComponentPropsWithoutRef<typeof CommandPrimitive.Group>
+>(({ className, ...props }, ref) => (
+  <CommandPrimitive.Group
+    ref={ref}
+    className={cn(
+      "overflow-hidden text-dark [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:t-label-small [&_[cmdk-group-heading]]:text-muted-fg",
+      className
+    )}
+    {...props}
+  />
+));
+CommandGroup.displayName = "CommandGroup";
+
+export const CommandItem = React.forwardRef<
+  React.ElementRef<typeof CommandPrimitive.Item>,
+  React.ComponentPropsWithoutRef<typeof CommandPrimitive.Item>
+>(({ className, ...props }, ref) => (
+  <CommandPrimitive.Item
+    ref={ref}
+    className={cn(
+      "relative flex cursor-default select-none items-center gap-2 rounded-md px-2 py-2 text-[14px] outline-none transition-colors",
+      "data-[selected=true]:bg-mist data-[selected=true]:text-cosmic",
+      "data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50",
+      className
+    )}
+    {...props}
+  />
+));
+CommandItem.displayName = "CommandItem";
+
+export const CommandSeparator = React.forwardRef<
+  React.ElementRef<typeof CommandPrimitive.Separator>,
+  React.ComponentPropsWithoutRef<typeof CommandPrimitive.Separator>
+>(({ className, ...props }, ref) => (
+  <CommandPrimitive.Separator ref={ref} className={cn("-mx-1 h-px bg-border", className)} {...props} />
+));
+CommandSeparator.displayName = "CommandSeparator";
+
+export const CommandShortcut = ({ className, ...props }: React.HTMLAttributes<HTMLSpanElement>) => (
+  <span className={cn("ml-auto t-label-small text-muted", className)} {...props} />
+);
+<<< END FILE
+
+==============================================================================
+>>> FILE: src/components/ui/tooltip.tsx
+==============================================================================
+import * as React from "react";
+import * as TooltipPrimitive from "@radix-ui/react-tooltip";
+import { cn } from "@/lib/utils";
+
+export const TooltipProvider = TooltipPrimitive.Provider;
+export const Tooltip = TooltipPrimitive.Root;
+export const TooltipTrigger = TooltipPrimitive.Trigger;
+
+export const TooltipContent = React.forwardRef<
+  React.ElementRef<typeof TooltipPrimitive.Content>,
+  React.ComponentPropsWithoutRef<typeof TooltipPrimitive.Content>
+>(({ className, sideOffset = 4, ...props }, ref) => (
+  <TooltipPrimitive.Content
+    ref={ref}
+    sideOffset={sideOffset}
+    className={cn(
+      "z-50 overflow-hidden rounded-md bg-cosmic px-2.5 py-1.5 t-body-small text-white shadow-2",
+      "data-[state=delayed-open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=delayed-open]:fade-in-0",
+      className
+    )}
+    {...props}
+  />
+));
+TooltipContent.displayName = "TooltipContent";
+<<< END FILE
+
+==============================================================================
+>>> FILE: src/components/ui/progress.tsx
+==============================================================================
+import * as React from "react";
+import * as ProgressPrimitive from "@radix-ui/react-progress";
+import { cn } from "@/lib/utils";
+
+interface ProgressProps extends React.ComponentPropsWithoutRef<typeof ProgressPrimitive.Root> {
+  indicatorClassName?: string;
+}
+
+export const Progress = React.forwardRef<
+  React.ElementRef<typeof ProgressPrimitive.Root>,
+  ProgressProps
+>(({ className, value, indicatorClassName, ...props }, ref) => (
+  <ProgressPrimitive.Root
+    ref={ref}
+    className={cn("relative h-1.5 w-full overflow-hidden rounded-pill bg-mist", className)}
+    {...props}
+  >
+    <ProgressPrimitive.Indicator
+      className={cn("h-full bg-stellar transition-all duration-500 ease-out rounded-pill", indicatorClassName)}
+      style={{ transform: `translateX(-${100 - (value || 0)}%)` }}
+    />
+  </ProgressPrimitive.Root>
+));
+Progress.displayName = "Progress";
+<<< END FILE
+
+==============================================================================
+>>> FILE: src/components/ui/separator.tsx
+==============================================================================
+import * as React from "react";
+import * as SeparatorPrimitive from "@radix-ui/react-separator";
+import { cn } from "@/lib/utils";
+
+export const Separator = React.forwardRef<
+  React.ElementRef<typeof SeparatorPrimitive.Root>,
+  React.ComponentPropsWithoutRef<typeof SeparatorPrimitive.Root>
+>(({ className, orientation = "horizontal", decorative = true, ...props }, ref) => (
+  <SeparatorPrimitive.Root
+    ref={ref}
+    decorative={decorative}
+    orientation={orientation}
+    className={cn(
+      "shrink-0 bg-border",
+      orientation === "horizontal" ? "h-px w-full" : "h-full w-px",
+      className
+    )}
+    {...props}
+  />
+));
+Separator.displayName = "Separator";
+<<< END FILE
+
+==============================================================================
+>>> FILE: src/components/ui/scroll-area.tsx
+==============================================================================
+import * as React from "react";
+import * as ScrollAreaPrimitive from "@radix-ui/react-scroll-area";
+import { cn } from "@/lib/utils";
+
+export const ScrollArea = React.forwardRef<
+  React.ElementRef<typeof ScrollAreaPrimitive.Root>,
+  React.ComponentPropsWithoutRef<typeof ScrollAreaPrimitive.Root>
+>(({ className, children, ...props }, ref) => (
+  <ScrollAreaPrimitive.Root ref={ref} className={cn("relative overflow-hidden", className)} {...props}>
+    <ScrollAreaPrimitive.Viewport className="h-full w-full rounded-[inherit]">
+      {children}
+    </ScrollAreaPrimitive.Viewport>
+    <ScrollBar />
+    <ScrollAreaPrimitive.Corner />
+  </ScrollAreaPrimitive.Root>
+));
+ScrollArea.displayName = "ScrollArea";
+
+export const ScrollBar = React.forwardRef<
+  React.ElementRef<typeof ScrollAreaPrimitive.ScrollAreaScrollbar>,
+  React.ComponentPropsWithoutRef<typeof ScrollAreaPrimitive.ScrollAreaScrollbar>
+>(({ className, orientation = "vertical", ...props }, ref) => (
+  <ScrollAreaPrimitive.ScrollAreaScrollbar
+    ref={ref}
+    orientation={orientation}
+    className={cn(
+      "flex touch-none select-none transition-colors",
+      orientation === "vertical" && "h-full w-2 border-l border-l-transparent p-[1px]",
+      orientation === "horizontal" && "h-2 flex-col border-t border-t-transparent p-[1px]",
+      className
+    )}
+    {...props}
+  >
+    <ScrollAreaPrimitive.ScrollAreaThumb className="relative flex-1 rounded-pill bg-cosmic/15 hover:bg-cosmic/30 transition-colors" />
+  </ScrollAreaPrimitive.ScrollAreaScrollbar>
+));
+ScrollBar.displayName = "ScrollBar";
+<<< END FILE
+
+==============================================================================
+>>> FILE: src/components/ui/switch.tsx
+==============================================================================
+import * as React from "react";
+import * as SwitchPrimitive from "@radix-ui/react-switch";
+import { cn } from "@/lib/utils";
+
+export const Switch = React.forwardRef<
+  React.ElementRef<typeof SwitchPrimitive.Root>,
+  React.ComponentPropsWithoutRef<typeof SwitchPrimitive.Root>
+>(({ className, ...props }, ref) => (
+  <SwitchPrimitive.Root
+    ref={ref}
+    className={cn(
+      "peer inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-pill border-2 border-transparent transition-colors",
+      "focus-visible:outline-none focus-visible:shadow-focus disabled:cursor-not-allowed disabled:opacity-50",
+      "data-[state=checked]:bg-stellar data-[state=unchecked]:bg-mist data-[state=unchecked]:border-border-strong",
+      className
+    )}
+    {...props}
+  >
+    <SwitchPrimitive.Thumb
+      className={cn(
+        "pointer-events-none block h-4 w-4 rounded-pill bg-white shadow-1 ring-0 transition-transform",
+        "data-[state=checked]:translate-x-4 data-[state=unchecked]:translate-x-0"
+      )}
+    />
+  </SwitchPrimitive.Root>
+));
+Switch.displayName = "Switch";
+<<< END FILE
+
+==============================================================================
+>>> FILE: src/components/ui/checkbox.tsx
+==============================================================================
+import * as React from "react";
+import * as CheckboxPrimitive from "@radix-ui/react-checkbox";
+import { Check } from "lucide-react";
+import { cn } from "@/lib/utils";
+
+export const Checkbox = React.forwardRef<
+  React.ElementRef<typeof CheckboxPrimitive.Root>,
+  React.ComponentPropsWithoutRef<typeof CheckboxPrimitive.Root>
+>(({ className, ...props }, ref) => (
+  <CheckboxPrimitive.Root
+    ref={ref}
+    className={cn(
+      "peer h-4 w-4 shrink-0 rounded-sm border border-border-strong bg-white transition-colors",
+      "focus-visible:outline-none focus-visible:shadow-focus",
+      "disabled:cursor-not-allowed disabled:opacity-50",
+      "data-[state=checked]:bg-stellar data-[state=checked]:border-stellar data-[state=checked]:text-white",
+      className
+    )}
+    {...props}
+  >
+    <CheckboxPrimitive.Indicator className={cn("flex items-center justify-center text-current")}>
+      <Check className="h-3 w-3" strokeWidth={3} />
+    </CheckboxPrimitive.Indicator>
+  </CheckboxPrimitive.Root>
+));
+Checkbox.displayName = "Checkbox";
+<<< END FILE
+
+==============================================================================
+>>> FILE: src/components/ui/textarea.tsx
+==============================================================================
+import * as React from "react";
+import { cn } from "@/lib/utils";
+
+export const Textarea = React.forwardRef<HTMLTextAreaElement, React.TextareaHTMLAttributes<HTMLTextAreaElement>>(
+  ({ className, ...props }, ref) => (
+    <textarea
+      ref={ref}
+      className={cn(
+        "flex min-h-[80px] w-full rounded-lg border border-border-strong bg-white px-3 py-2 text-[14px] text-dark transition-colors",
+        "placeholder:text-muted",
+        "focus-visible:outline-none focus-visible:border-stellar focus-visible:border-2 focus-visible:px-[11px] focus-visible:py-[7px]",
+        "disabled:cursor-not-allowed disabled:opacity-50 resize-none",
+        className
+      )}
+      {...props}
+    />
+  )
+);
+Textarea.displayName = "Textarea";
+<<< END FILE
+
+==============================================================================
+>>> FILE: src/components/connx/logo.tsx
+==============================================================================
+import { cn } from "@/lib/utils";
+
+interface LogoProps {
+  collapsed?: boolean;
+  className?: string;
+  size?: "sm" | "md" | "lg";
+}
+
+export function Logo({ collapsed = false, className, size = "md" }: LogoProps) {
+  const dims = { sm: 24, md: 28, lg: 36 }[size];
+  const text = { sm: "t-title-medium", md: "t-title-large", lg: "t-headline-small" }[size];
+
+  return (
+    <div className={cn("flex items-center gap-2.5", className)}>
+      <div
+        className="relative shrink-0 rounded-md leo-avatar-gradient flex items-center justify-center shadow-1"
+        style={{ width: dims, height: dims }}
+        aria-hidden
+      >
+        <svg width={dims * 0.55} height={dims * 0.55} viewBox="0 0 24 24" fill="none">
+          {/* Stylised C with a node — represents connection */}
+          <path
+            d="M19 6.5C17.4 4.7 15 3.5 12 3.5C7.6 3.5 4 7.1 4 11.5C4 15.9 7.6 19.5 12 19.5C15 19.5 17.4 18.3 19 16.5"
+            stroke="white"
+            strokeWidth="2.4"
+            strokeLinecap="round"
+          />
+          <circle cx="19" cy="11.5" r="2.4" fill="white" />
+        </svg>
+      </div>
+      {!collapsed && (
+        <span className={cn(text, "text-cosmic font-semibold tracking-tight")}>
+          CONNX
+        </span>
+      )}
+    </div>
+  );
+}
+<<< END FILE
+
+==============================================================================
+>>> FILE: src/components/connx/page-placeholder.tsx
+==============================================================================
+import { Construction } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+
+export function PagePlaceholder({ title, description }: { title: string; description?: string }) {
+  return (
+    <div className="p-6 lg:p-8">
+      <h1 className="mb-1">{title}</h1>
+      {description && <p className="text-muted-fg t-body-large mb-6">{description}</p>}
+
+      <Card className="border-dashed">
+        <CardContent className="flex flex-col items-center justify-center py-16 text-center">
+          <div className="h-12 w-12 rounded-full bg-mist flex items-center justify-center mb-4">
+            <Construction className="h-5 w-5 text-stellar" />
+          </div>
+          <div className="t-title-medium text-cosmic mb-1">Coming next</div>
+          <p className="t-body-medium text-muted-fg max-w-sm">
+            This surface ships in the next build pass. The shell, navigation, and design tokens are wired and ready.
+          </p>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+<<< END FILE
+
+==============================================================================
+>>> FILE: src/components/layout/sidebar.tsx
+==============================================================================
+import { NavLink, useLocation } from "react-router-dom";
+import {
+  LayoutDashboard, Briefcase, ShieldCheck, PhoneCall, Send, MessagesSquare,
+  FileText, Settings, Plug, Users, BarChart3, Trophy, Target, ClipboardCheck, Inbox,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+import { usePersona } from "@/lib/persona-context";
+import { Logo } from "./logo";
+import type { Persona } from "@/types";
+
+interface NavItem {
+  to: string;
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+  badge?: string | number;
+}
+
+const NAV_BY_PERSONA: Record<Persona, { section: string; items: NavItem[] }[]> = {
+  recruiter: [
+    {
+      section: "Workspace",
+      items: [
+        { to: "/", label: "Dashboard", icon: LayoutDashboard },
+        { to: "/roles", label: "Roles & candidates", icon: Briefcase, badge: 6 },
+        { to: "/consent", label: "Consent center", icon: ShieldCheck, badge: 12 },
+      ],
+    },
+    {
+      section: "Outreach",
+      items: [
+        { to: "/dialer", label: "Auto Dialer", icon: PhoneCall },
+        { to: "/bulk", label: "Bulk comms", icon: Send },
+        { to: "/timeline", label: "Candidate timeline", icon: MessagesSquare },
+      ],
+    },
+    {
+      section: "Library",
+      items: [
+        { to: "/templates", label: "Templates", icon: FileText },
+      ],
+    },
+  ],
+  hm: [
+    {
+      section: "Pipeline",
+      items: [
+        { to: "/hm", label: "My roles", icon: LayoutDashboard },
+        { to: "/hm/approvals", label: "Approvals", icon: ClipboardCheck, badge: 7 },
+        { to: "/hm/digest", label: "Daily digest", icon: Inbox },
+      ],
+    },
+  ],
+  lead: [
+    {
+      section: "Team",
+      items: [
+        { to: "/lead", label: "Team analytics", icon: BarChart3 },
+        { to: "/lead/leaderboard", label: "Leaderboard", icon: Trophy },
+        { to: "/lead/goals", label: "Goals & SLAs", icon: Target },
+        { to: "/lead/team", label: "Team members", icon: Users },
+      ],
+    },
+  ],
+};
+
+const FOOTER_NAV: NavItem[] = [
+  { to: "/settings", label: "Settings", icon: Settings },
+  { to: "/integrations", label: "Integrations", icon: Plug },
+];
+
+export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
+  const { persona } = usePersona();
+  const sections = NAV_BY_PERSONA[persona];
+
+  return (
+    <aside className="h-full w-[240px] bg-white border-r border-border flex flex-col shrink-0">
+      <div className="px-5 py-4 border-b border-border">
+        <Logo />
+      </div>
+
+      <nav className="flex-1 overflow-y-auto py-4 px-3">
+        {sections.map((section) => (
+          <div key={section.section} className="mb-6">
+            <div className="t-label-small text-muted-fg px-3 mb-2">{section.section}</div>
+            <div className="flex flex-col gap-0.5">
+              {section.items.map((item) => (
+                <SidebarLink key={item.to} item={item} onNavigate={onNavigate} />
+              ))}
+            </div>
+          </div>
+        ))}
+      </nav>
+
+      <div className="border-t border-border py-3 px-3">
+        <div className="flex flex-col gap-0.5">
+          {FOOTER_NAV.map((item) => (
+            <SidebarLink key={item.to} item={item} onNavigate={onNavigate} />
+          ))}
+        </div>
+      </div>
+    </aside>
+  );
+}
+
+function SidebarLink({ item, onNavigate }: { item: NavItem; onNavigate?: () => void }) {
+  const Icon = item.icon;
+  const location = useLocation();
+  const isActive =
+    item.to === "/"
+      ? location.pathname === "/"
+      : location.pathname.startsWith(item.to);
+
+  return (
+    <NavLink
+      to={item.to}
+      onClick={onNavigate}
+      end={item.to === "/" || item.to === "/hm" || item.to === "/lead"}
+      className={cn(
+        "group flex items-center gap-3 px-3 py-2 rounded-md t-label-large transition-colors focus-visible:outline-none focus-visible:shadow-focus",
+        isActive
+          ? "bg-stellar-50 text-stellar-700"
+          : "text-dark hover:bg-mist hover:text-cosmic"
+      )}
+    >
+      <Icon className={cn("h-[18px] w-[18px] shrink-0", isActive ? "text-stellar" : "text-muted-fg group-hover:text-cosmic")} />
+      <span className="flex-1 truncate">{item.label}</span>
+      {item.badge !== undefined && (
+        <span className={cn(
+          "t-label-small rounded-pill px-1.5 py-0.5 min-w-[20px] text-center",
+          isActive ? "bg-stellar text-white" : "bg-mist text-cosmic"
+        )}>{item.badge}</span>
+      )}
+    </NavLink>
+  );
+}
+<<< END FILE
+
+==============================================================================
+>>> FILE: src/components/layout/persona-switcher.tsx
+==============================================================================
+import { ChevronDown, Briefcase, Eye, BarChart3, Check } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem,
+  DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { usePersona, PERSONA_LABEL, PERSONA_DESC } from "@/lib/persona-context";
+import type { Persona } from "@/types";
+
+const ICONS: Record<Persona, React.ComponentType<{ className?: string }>> = {
+  recruiter: Briefcase,
+  hm: Eye,
+  lead: BarChart3,
+};
+
+const HOME_ROUTE: Record<Persona, string> = {
+  recruiter: "/",
+  hm: "/hm",
+  lead: "/lead",
+};
+
+export function PersonaSwitcher() {
+  const { persona, setPersona } = usePersona();
+  const navigate = useNavigate();
+  const Icon = ICONS[persona];
+
+  const switchTo = (p: Persona) => {
+    setPersona(p);
+    navigate(HOME_ROUTE[p]);
+  };
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="outline" size="sm" className="gap-2">
+          <Icon className="h-3.5 w-3.5 text-stellar" />
+          <span className="hidden md:inline">{PERSONA_LABEL[persona]}</span>
+          <span className="md:hidden">View</span>
+          <ChevronDown className="h-3.5 w-3.5 text-muted" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-[280px]">
+        <DropdownMenuLabel>Switch view</DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        {(["recruiter", "hm", "lead"] as Persona[]).map((p) => {
+          const I = ICONS[p];
+          const active = p === persona;
+          return (
+            <DropdownMenuItem key={p} onSelect={() => switchTo(p)} className="py-2.5">
+              <div className="flex items-start gap-3 w-full">
+                <I className="h-4 w-4 text-stellar mt-0.5" />
+                <div className="flex-1">
+                  <div className="t-label-large">{PERSONA_LABEL[p]}</div>
+                  <div className="t-body-small text-muted-fg">{PERSONA_DESC[p]}</div>
+                </div>
+                {active && <Check className="h-4 w-4 text-stellar mt-0.5" />}
+              </div>
+            </DropdownMenuItem>
+          );
+        })}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+<<< END FILE
+
+==============================================================================
+>>> FILE: src/components/layout/top-bar.tsx
+==============================================================================
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import {
+  Bell, Command as CommandIcon, Search, Sparkles, Menu,
+  PhoneCall, Send, UserPlus, Briefcase, Calendar, MessagesSquare,
+  ShieldCheck, FileText,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem,
+  DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  CommandDialog, CommandEmpty, CommandGroup, CommandInput,
+  CommandItem, CommandList, CommandSeparator,
+} from "@/components/ui/command";
+import { NameAvatar } from "@/components/ui/avatar";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { PersonaSwitcher } from "./persona-switcher";
+import { Sidebar } from "./sidebar";
+import { CURRENT_RECRUITER, ORG } from "@/data/mock";
+
+export function TopBar() {
+  const [cmdOpen, setCmdOpen] = useState(false);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const navigate = useNavigate();
+
+  // ⌘K shortcut
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        setCmdOpen((o) => !o);
+      }
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, []);
+
+  const go = (path: string) => {
+    setCmdOpen(false);
+    navigate(path);
+  };
+
+  return (
+    <>
+      <header className="h-14 border-b border-border bg-white px-4 lg:px-6 flex items-center gap-3 sticky top-0 z-30">
+        {/* Mobile menu */}
+        <Sheet open={mobileSidebarOpen} onOpenChange={setMobileSidebarOpen}>
+          <SheetTrigger asChild>
+            <Button variant="ghost" size="icon-sm" className="lg:hidden" aria-label="Open menu">
+              <Menu className="h-4 w-4" />
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="left" className="p-0 max-w-[260px] w-[260px]">
+            <Sidebar onNavigate={() => setMobileSidebarOpen(false)} />
+          </SheetContent>
+        </Sheet>
+
+        {/* Search trigger */}
+        <button
+          onClick={() => setCmdOpen(true)}
+          className="flex-1 max-w-[480px] h-9 px-3 rounded-lg border border-border-strong bg-white flex items-center gap-2 t-body-medium text-muted hover:border-stellar/40 transition-colors focus-ring"
+          aria-label="Search or run command"
+        >
+          <Search className="h-4 w-4 shrink-0" />
+          <span className="hidden md:inline truncate">Ask CONNX or search candidates, roles, actions…</span>
+          <span className="md:hidden truncate">Search…</span>
+          <kbd className="ml-auto t-label-small bg-mist text-cosmic px-1.5 py-0.5 rounded-sm hidden md:flex items-center gap-1">
+            <CommandIcon className="h-3 w-3" /> K
+          </kbd>
+        </button>
+
+        <div className="flex-1 lg:hidden" />
+
+        {/* Right side */}
+        <div className="flex items-center gap-2">
+          <PersonaSwitcher />
+
+          {/* Notifications */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon-sm" className="relative" aria-label="Notifications">
+                <Bell className="h-4 w-4" />
+                <span className="absolute top-1.5 right-1.5 h-1.5 w-1.5 rounded-full bg-nebula border border-white" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-[320px]">
+              <DropdownMenuLabel>Notifications</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <div className="p-2 space-y-1">
+                <NotifItem
+                  icon={<ShieldCheck className="h-4 w-4 text-success-ink" />}
+                  title="Owen Walsh accepted consent"
+                  desc="Senior Backend Engineer · 34 min ago"
+                />
+                <NotifItem
+                  icon={<MessagesSquare className="h-4 w-4 text-stellar" />}
+                  title="New SMS reply from Naomi Petrov"
+                  desc="Confirmed callback for tomorrow 11am"
+                />
+                <NotifItem
+                  icon={<Sparkles className="h-4 w-4 text-quantum" />}
+                  title="LEO suggests calling Diego Mendoza now"
+                  desc="Best-time-to-reach window opens in 5 min"
+                />
+              </div>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem className="justify-center text-stellar">
+                View all activity
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          {/* User menu */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="rounded-pill focus-ring" aria-label="Account menu">
+                <NameAvatar name={CURRENT_RECRUITER.name} size={32} />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-[240px]">
+              <div className="px-2 py-1.5">
+                <div className="t-label-large">{CURRENT_RECRUITER.name}</div>
+                <div className="t-body-small text-muted-fg">{CURRENT_RECRUITER.email}</div>
+                <div className="t-body-small text-muted-fg mt-1">{ORG.name} · {CURRENT_RECRUITER.team}</div>
+              </div>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onSelect={() => navigate("/settings")}>Profile & preferences</DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => navigate("/settings")}>Layout preferences</DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => navigate("/integrations")}>Integrations</DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem className="text-danger-ink">Sign out</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      </header>
+
+      {/* Command palette */}
+      <CommandDialog open={cmdOpen} onOpenChange={setCmdOpen}>
+        <CommandInput placeholder="Ask CONNX in plain English, or search..." />
+        <CommandList>
+          <CommandEmpty>No results.</CommandEmpty>
+
+          <CommandGroup heading="Ask LEO">
+            <CommandItem onSelect={() => go("/dialer")}>
+              <Sparkles className="h-4 w-4 text-quantum" />
+              <span>Show consented candidates I haven't called for Sr. Backend Engineer</span>
+            </CommandItem>
+            <CommandItem onSelect={() => go("/bulk")}>
+              <Sparkles className="h-4 w-4 text-quantum" />
+              <span>Send a follow-up SMS to everyone who declined last week</span>
+            </CommandItem>
+            <CommandItem onSelect={() => go("/")}>
+              <Sparkles className="h-4 w-4 text-quantum" />
+              <span>What should I do first today?</span>
+            </CommandItem>
+          </CommandGroup>
+
+          <CommandSeparator />
+
+          <CommandGroup heading="Quick actions">
+            <CommandItem onSelect={() => go("/dialer")}>
+              <PhoneCall className="h-4 w-4 text-stellar" />
+              <span>Start dialer session</span>
+            </CommandItem>
+            <CommandItem onSelect={() => go("/bulk")}>
+              <Send className="h-4 w-4 text-stellar" />
+              <span>Compose bulk message</span>
+            </CommandItem>
+            <CommandItem onSelect={() => go("/roles")}>
+              <UserPlus className="h-4 w-4 text-stellar" />
+              <span>Add candidate</span>
+            </CommandItem>
+          </CommandGroup>
+
+          <CommandSeparator />
+
+          <CommandGroup heading="Go to">
+            <CommandItem onSelect={() => go("/")}>
+              <Briefcase className="h-4 w-4" /> <span>Dashboard</span>
+            </CommandItem>
+            <CommandItem onSelect={() => go("/roles")}>
+              <Briefcase className="h-4 w-4" /> <span>Roles & candidates</span>
+            </CommandItem>
+            <CommandItem onSelect={() => go("/consent")}>
+              <ShieldCheck className="h-4 w-4" /> <span>Consent center</span>
+            </CommandItem>
+            <CommandItem onSelect={() => go("/templates")}>
+              <FileText className="h-4 w-4" /> <span>Templates</span>
+            </CommandItem>
+            <CommandItem onSelect={() => go("/timeline")}>
+              <Calendar className="h-4 w-4" /> <span>Candidate timeline</span>
+            </CommandItem>
+          </CommandGroup>
+        </CommandList>
+      </CommandDialog>
+    </>
+  );
+}
+
+function NotifItem({ icon, title, desc }: { icon: React.ReactNode; title: string; desc: string }) {
+  return (
+    <div className="flex items-start gap-3 px-2 py-2 rounded-md hover:bg-mist cursor-pointer transition-colors">
+      <div className="mt-0.5 shrink-0">{icon}</div>
+      <div className="flex-1 min-w-0">
+        <div className="t-label-large truncate">{title}</div>
+        <div className="t-body-small text-muted-fg">{desc}</div>
+      </div>
+    </div>
+  );
+}
+<<< END FILE
+
+==============================================================================
+>>> FILE: src/components/layout/app-shell.tsx
+==============================================================================
+import { Outlet } from "react-router-dom";
+import { Sidebar } from "./sidebar";
+import { TopBar } from "./top-bar";
+
+export function AppShell() {
+  return (
+    <div className="h-screen w-full flex bg-mist">
+      {/* Desktop sidebar */}
+      <div className="hidden lg:block">
+        <Sidebar />
+      </div>
+
+      {/* Main */}
+      <div className="flex-1 flex flex-col min-w-0">
+        <TopBar />
+        <main className="flex-1 overflow-y-auto">
+          <Outlet />
+        </main>
+      </div>
+    </div>
+  );
+}
+<<< END FILE
+
+==============================================================================
+>>> FILE: src/pages/recruiter/dashboard.tsx
+==============================================================================
+import { useEffect, useState } from "react";
+import { Sparkles, TrendingUp, PhoneCall, Users, Target, ArrowRight } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { CURRENT_RECRUITER, TODAY_METRICS, GOALS, ORG } from "@/data/mock";
+import { cn } from "@/lib/utils";
+
+export default function DashboardPage() {
+  // Greeting that reflects time of day — small touch of warmth from the design language
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
+  const firstName = CURRENT_RECRUITER.name.split(" ")[0];
+
+  return (
+    <div className="p-6 lg:p-8 max-w-[1200px] mx-auto">
+      {/* Greeting */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-6">
+        <div>
+          <h1 className="mb-1">{greeting}, {firstName}</h1>
+          <p className="text-muted-fg t-body-large">Here's what's happening across your roles today.</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm">
+            <PhoneCall className="h-3.5 w-3.5" /> Resume last queue
+          </Button>
+          <Button size="sm">
+            <PhoneCall className="h-3.5 w-3.5" /> Start dialer
+          </Button>
+        </div>
+      </div>
+
+      {/* Quick metrics */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <MetricCard label="Calls made today" value={TODAY_METRICS.callsMade} delta="+12%" trend="up" icon={PhoneCall} />
+        <MetricCard label="Connect rate" value={`${Math.round(TODAY_METRICS.connectRate * 100)}%`} delta="+4%" trend="up" icon={TrendingUp} />
+        <MetricCard label="Screenings done" value={TODAY_METRICS.screeningsCompleted} delta={`${TODAY_METRICS.shortlisted} shortlisted`} icon={Users} />
+        <MetricCard
+          label="Daily goal"
+          value={`${GOALS.daily.actual}/${GOALS.daily.target}`}
+          delta={`${Math.round((GOALS.daily.actual / GOALS.daily.target) * 100)}% there`}
+          icon={Target}
+        />
+      </div>
+
+      {/* Foundation verification card */}
+      <Card>
+        <CardContent className="p-6">
+          <div className="flex items-start gap-4">
+            <div className="leo-gradient rounded-lg p-2.5 shrink-0">
+              <Sparkles className="h-5 w-5 text-white" />
+            </div>
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-1">
+                <h5>Foundation ready</h5>
+                <Badge variant="success">Pass 1 of 8</Badge>
+              </div>
+              <p className="text-muted-fg mb-4">
+                Design tokens, layout shell, sidebar, top bar, persona switcher, and ⌘K command palette are wired up. Try the persona switcher in the top right — sidebar nav adapts per role. Press ⌘K to open the natural-language command bar.
+              </p>
+              <div className="flex flex-wrap gap-2">
+                <Badge variant="info">Cosmic Indigo · Stellar Blue · Lunar Mist</Badge>
+                <Badge variant="info">M3 type scale</Badge>
+                <Badge variant="info">4px spacing grid</Badge>
+                <Badge variant="info">Lucide icons</Badge>
+                <Badge variant="info">Cool shadows</Badge>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <p className="t-body-small text-muted-fg text-center mt-8">
+        {ORG.name} · {ORG.industry} · {ORG.size}
+      </p>
+    </div>
+  );
+}
+
+function MetricCard({
+  label, value, delta, trend, icon: Icon,
+}: {
+  label: string; value: string | number; delta?: string; trend?: "up" | "down"; icon: React.ComponentType<{ className?: string }>;
+}) {
+  return (
+    <Card>
+      <CardContent className="p-5">
+        <div className="flex items-center justify-between mb-3">
+          <Icon className="h-4 w-4 text-muted-fg" />
+          {delta && trend && (
+            <Badge variant={trend === "up" ? "success" : "danger"} size="sm" className="gap-0.5">
+              <TrendingUp className={cn("h-2.5 w-2.5", trend === "down" && "rotate-180")} />
+              {delta}
+            </Badge>
+          )}
+          {delta && !trend && <span className="t-body-small text-muted-fg">{delta}</span>}
+        </div>
+        <div className="t-display-small text-cosmic mb-1 tabular-nums">{value}</div>
+        <div className="t-body-small text-muted-fg">{label}</div>
+      </CardContent>
+    </Card>
+  );
+}
+<<< END FILE
+
+==============================================================================
+>>> FILE: src/App.tsx
+==============================================================================
+import { createBrowserRouter, RouterProvider, Navigate } from "react-router-dom";
+import { AppShell } from "@/components/layout/app-shell";
+import { PagePlaceholder } from "@/components/connx/page-placeholder";
+import DashboardPage from "@/pages/recruiter/dashboard";
+
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <AppShell />,
+    children: [
+      // Recruiter
+      { index: true, element: <DashboardPage /> },
+      { path: "roles", element: <PagePlaceholder title="Roles & candidates" description="6 open roles · 142 candidates in flight" /> },
+      { path: "roles/:roleId", element: <PagePlaceholder title="Role detail" /> },
+      { path: "consent", element: <PagePlaceholder title="Consent center" description="Track consent status across all candidates and roles" /> },
+      { path: "dialer", element: <PagePlaceholder title="Auto Dialer" description="The hero flow — queue builder, customise call view, active call" /> },
+      { path: "bulk", element: <PagePlaceholder title="Bulk communication" description="SMS, email, and WhatsApp campaigns" /> },
+      { path: "timeline", element: <PagePlaceholder title="Candidate timeline" /> },
+      { path: "candidates/:id", element: <PagePlaceholder title="Candidate profile" /> },
+      { path: "templates", element: <PagePlaceholder title="Templates library" /> },
+
+      // Hiring Manager
+      { path: "hm", element: <PagePlaceholder title="Pipeline" description="Read-only view of all your open roles" /> },
+      { path: "hm/candidates/:id", element: <PagePlaceholder title="Candidate review" /> },
+      { path: "hm/approvals", element: <PagePlaceholder title="Approvals queue" /> },
+      { path: "hm/digest", element: <PagePlaceholder title="Daily digest" /> },
+
+      // Recruitment Lead
+      { path: "lead", element: <PagePlaceholder title="Team analytics" /> },
+      { path: "lead/leaderboard", element: <PagePlaceholder title="Leaderboard" /> },
+      { path: "lead/goals", element: <PagePlaceholder title="Goals & SLAs" /> },
+      { path: "lead/team", element: <PagePlaceholder title="Team members" /> },
+
+      // Shared
+      { path: "settings", element: <PagePlaceholder title="Settings" /> },
+      { path: "integrations", element: <PagePlaceholder title="Integrations" /> },
+
+      // Catchall
+      { path: "*", element: <Navigate to="/" replace /> },
+    ],
+  },
+]);
+
+export function AppRouter() {
+  return <RouterProvider router={router} />;
+}
+<<< END FILE
+
+==============================================================================
+>>> FILE: src/main.tsx
+==============================================================================
+import React from "react";
+import ReactDOM from "react-dom/client";
+import { Toaster } from "sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { PersonaProvider } from "@/lib/persona-context";
+import { AppRouter } from "./App";
+import "./styles/globals.css";
+
+ReactDOM.createRoot(document.getElementById("root")!).render(
+  <React.StrictMode>
+    <PersonaProvider>
+      <TooltipProvider delayDuration={200}>
+        <AppRouter />
+        <Toaster
+          position="top-right"
+          toastOptions={{
+            classNames: {
+              toast: "!bg-white !border-border !shadow-2 !text-dark !rounded-lg",
+              title: "!t-label-large !text-cosmic",
+              description: "!t-body-small !text-muted-fg",
+            },
+          }}
+        />
+      </TooltipProvider>
+    </PersonaProvider>
+  </React.StrictMode>
+);
+<<< END FILE
